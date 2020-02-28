@@ -169,8 +169,9 @@ class MultiChannelPlayer {
             const request = new XMLHttpRequest();
 
             request.onload = () => {
-              // logger.debug("got file");
+              // console.log("got file");
               const audioData = request.response;
+              console.log("response", request.response);
               this.audioCtx.decodeAudioData(audioData, buffer => {
                 // logger.debug("got audio buffer");
                 sample.bufferData = buffer;
@@ -184,7 +185,8 @@ class MultiChannelPlayer {
 
             request.open("GET", sample.src);
             request.responseType = "arraybuffer";
-            request.send(); // logger.debug(request);
+            request.send();
+            console.log(request);
           }
         });
       }));
@@ -234,6 +236,10 @@ const getGainNodes = (numSpeakers, ctx) => {
 
   return g;
 };
+},{}],"clips/jump.mp3":[function(require,module,exports) {
+module.exports = "/clips/jump.mp3";
+},{}],"clips/land.mp3":[function(require,module,exports) {
+module.exports = "/clips/land.mp3";
 },{}],"example.ts":[function(require,module,exports) {
 "use strict";
 
@@ -249,12 +255,16 @@ Object.defineProperty(exports, "__esModule", {
 
 const dist_1 = __importDefault(require("../dist"));
 
+require("./clips/jump.mp3");
+
+require("./clips/land.mp3");
+
 const player = new dist_1.default(2);
 player.loadSamples({
   jump: "/clips/jump.mp3",
   land: "/clips/land.mp3"
 });
-},{"../dist":"../dist/index.js"}],"../node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
+},{"../dist":"../dist/index.js","./clips/jump.mp3":"clips/jump.mp3","./clips/land.mp3":"clips/land.mp3"}],"../node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';
 var OldModule = module.bundle.Module;
@@ -282,7 +292,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "37609" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "34273" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};

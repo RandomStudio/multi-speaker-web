@@ -54,8 +54,9 @@ export default class MultiChannelPlayer {
             const request = new XMLHttpRequest();
 
             request.onload = () => {
-              // logger.debug("got file");
+              // console.log("got file");
               const audioData = request.response;
+              console.log("response", request.response);
               this.audioCtx.decodeAudioData(audioData, buffer => {
                 // logger.debug("got audio buffer");
                 sample.bufferData = buffer;
@@ -70,7 +71,7 @@ export default class MultiChannelPlayer {
             request.responseType = "arraybuffer";
             request.send();
 
-            // logger.debug(request);
+            console.log(request);
           }
         })
     );
