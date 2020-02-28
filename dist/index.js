@@ -54,6 +54,7 @@ class MultiChannelPlayer {
                 sample.bufferSourceNode = this.audioCtx.createBufferSource();
                 sample.bufferSourceNode.buffer = sample.bufferData;
                 connectBuffer(sample, this.audioCtx);
+                exclusiveSpeaker(this.audioCtx, sample.speakers, channel);
                 sample.bufferSourceNode.start(0);
                 sample.isPlaying = true;
                 sample.bufferSourceNode.onended = () => {
@@ -101,5 +102,15 @@ const connectBuffer = (sample, ctx) => {
         g.connect(sample.mix, 0, index);
     });
     sample.mix.connect(ctx.destination);
+};
+const exclusiveSpeaker = (ctx, speakers, target, maxVolume = 1) => {
+    speakers.forEach((s, index) => {
+        if (index === target) {
+            s.gain.setValueAtTime(maxVolume, ctx.currentTime);
+        }
+        else {
+            s.gain.setValueAtTime(0, ctx.currentTime);
+        }
+    });
 };
 //# sourceMappingURL=index.js.map
