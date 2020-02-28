@@ -97,7 +97,7 @@ const createBufferedSamples = (
         src: sources[key],
         bufferSourceNode: ctx.createBufferSource(),
         bufferData: null,
-        speakers: this.getGainNodes(numSpeakers, ctx),
+        speakers: getGainNodes(numSpeakers, ctx),
         mix: ctx.createChannelMerger(numSpeakers),
         isPlaying: false
       }
