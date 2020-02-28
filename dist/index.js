@@ -47,6 +47,15 @@ class MultiChannelPlayer {
                 console.error("error loading samples:", err);
             });
         });
+        this.play = (key, channel) => {
+            const sample = this.samples[key];
+            if (sample) {
+                console.log("found sample with key", key);
+            }
+            else {
+                console.error("could not find sample with key", key, "in sample bank: ", Object.keys(this.samples));
+            }
+        };
         this.numSpeakers = numSpeakers;
         this.audioCtx = new window.AudioContext();
         this.audioCtx.destination.channelInterpretation = "discrete";

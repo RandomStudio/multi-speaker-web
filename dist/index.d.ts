@@ -4,4 +4,5 @@ export default class MultiChannelPlayer {
     private numSpeakers;
     constructor(numSpeakers: number);
     loadSamples: (sources: Record<string, string>) => Promise<void>;
+    play: (key: string, channel: number) => void;
 }
