@@ -89,6 +89,14 @@ export default class MultiChannelPlayer {
     const sample = this.samples[key];
     if (sample) {
       console.log("found sample with key", key);
+      sample.bufferSourceNode = this.audioCtx.createBufferSource();
+      sample.bufferSourceNode.buffer = sample.bufferData;
+      connectBuffer(sample, this.audioCtx);
+      sample.bufferSourceNode.start(0);
+      sample.isPlaying = true;
+      sample.bufferSourceNode.onended = () => {
+        sample.isPlaying = false;
+      };
     } else {
       console.error(
         "could not find sample with key",
@@ -130,4 +138,13 @@ const getGainNodes = (numSpeakers: number, ctx: AudioContext): GainNode[] => {
     g.push(node);
   }
   return g;
+};
+
+const connectBuffer = (sample: BufferedSample, ctx: AudioContext) => {
+  sample.speakers.forEach((g, index) => {
+    sample.bufferSourceNode.connect(g);
+    g.connect(sample.mix, 0, index);
+  });
+
+  sample.mix.connect(ctx.destination);
 };
