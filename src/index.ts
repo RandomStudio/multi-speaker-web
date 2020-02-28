@@ -91,7 +91,10 @@ export default class MultiChannelPlayer {
       console.log("found sample with key", key);
       sample.bufferSourceNode = this.audioCtx.createBufferSource();
       sample.bufferSourceNode.buffer = sample.bufferData;
+
       connectBuffer(sample, this.audioCtx);
+      exclusiveSpeaker(this.audioCtx, sample.speakers, channel);
+
       sample.bufferSourceNode.start(0);
       sample.isPlaying = true;
       sample.bufferSourceNode.onended = () => {
@@ -147,4 +150,19 @@ const connectBuffer = (sample: BufferedSample, ctx: AudioContext) => {
   });
 
   sample.mix.connect(ctx.destination);
+};
+
+const exclusiveSpeaker = (
+  ctx: AudioContext,
+  speakers: GainNode[],
+  target: number,
+  maxVolume = 1
+) => {
+  speakers.forEach((s, index) => {
+    if (index === target) {
+      s.gain.setValueAtTime(maxVolume, ctx.currentTime);
+    } else {
+      s.gain.setValueAtTime(0, ctx.currentTime);
+    }
+  });
 };
