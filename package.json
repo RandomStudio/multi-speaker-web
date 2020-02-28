@@ -1,0 +1,17 @@
+{
+  "name": "multi-channel-web-audio",
+  "version": "0.0.1",
+  "description": "Multi channel, multi speaker audio for the browser",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Stephen Buchanan",
+  "license": "ISC",
+  "devDependencies": {
+    "prettier": "^1.19.1",
+    "tslint": "^6.0.0",
+    "tslint-config-prettier": "^1.18.0",
+    "typescript": "^3.8.2"
+  }
+}
