@@ -99,13 +99,14 @@ export default class MultiChannelPlayer {
     options?: PlaybackOptions
   ) => {
     if (Array.isArray(keySearch)) {
-      keySearch.forEach(key => {
-        this.playSample(key, channel, applyDefaults(options));
-      });
+      const pick = Math.floor(Math.random() * keySearch.length);
+      this.playSample(keySearch[pick], channel, applyDefaults(options));
     } else {
       this.playSample(keySearch, channel, applyDefaults(options));
     }
   };
+
+  public getSampleKeys = () => Object.keys(this.samples);
 
   private playSample = (
     key: string,

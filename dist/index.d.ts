@@ -11,7 +11,8 @@ export default class MultiChannelPlayer {
     private numSpeakers;
     constructor(numSpeakers: number);
     loadSamples: (sources: Record<string, string>) => Promise<void>;
-    play: (keySearch: string | string[], channel: number, options: PlaybackOptions) => void;
+    play: (keySearch: string | string[], channel: number, options?: PlaybackOptions) => void;
+    getSampleKeys: () => string[];
     private playSample;
     getIsPlaying: (key: string) => boolean;
 }

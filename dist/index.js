@@ -49,14 +49,14 @@ class MultiChannelPlayer {
         });
         this.play = (keySearch, channel, options) => {
             if (Array.isArray(keySearch)) {
-                keySearch.forEach(key => {
-                    this.playSample(key, channel, applyDefaults(options));
-                });
+                const pick = Math.floor(Math.random() * keySearch.length);
+                this.playSample(keySearch[pick], channel, applyDefaults(options));
             }
             else {
                 this.playSample(keySearch, channel, applyDefaults(options));
             }
         };
+        this.getSampleKeys = () => Object.keys(this.samples);
         this.playSample = (key, channel, options) => {
             const sample = this.samples[key];
             if (sample === undefined) {
@@ -149,10 +149,15 @@ const applyDefaults = (original) => {
         volumeMax: 1,
         exclusive: false
     };
-    const result = original;
-    Object.keys(original).forEach(key => {
-        result[key] = original[key] === undefined ? defaults[key] : original[key];
-    });
-    return result;
+    if (original === undefined) {
+        return defaults;
+    }
+    else {
+        const result = original;
+        Object.keys(original).forEach(key => {
+            result[key] = original[key] === undefined ? defaults[key] : original[key];
+        });
+        return result;
+    }
 };
 //# sourceMappingURL=index.js.map
