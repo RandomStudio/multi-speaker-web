@@ -64,9 +64,9 @@ export default class MultiChannelPlayer {
             request.onload = () => {
               // console.log("got file");
               const audioData = request.response;
-              console.log("response", request.response);
+              // console.log("response", request.response);
               this.audioCtx.decodeAudioData(audioData, buffer => {
-                console.log(`got audio buffer for sample "${key}"`);
+                // console.log(`got audio buffer for sample "${key}"`);
                 sample.bufferData = buffer;
                 resolve();
               });
@@ -121,7 +121,7 @@ export default class MultiChannelPlayer {
         )}`
       );
     }
-    console.log(`found sample "${key}", play on channel #${channel}`);
+    // console.log(`found sample "${key}", play on channel #${channel}`);
 
     if (sample.bufferData === null) {
       throw Error(`buffer not (yet?) loaded on call to play "${key}"`);
