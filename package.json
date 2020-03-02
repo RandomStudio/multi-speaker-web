@@ -1,6 +1,6 @@
 {
   "name": "multi-channel-web-audio",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Multi channel, multi speaker audio for the browser",
   "main": "dist/index.js",
   "scripts": {
@@ -8,6 +8,12 @@
     "build": "npx tsc",
     "example": "parcel example/index.html example/clips/**/* --out-dir example/build --global p"
   },
+  "keywords": [
+    "audio",
+    "multichannel",
+    "browser",
+    "media"
+  ],
   "author": "Stephen Buchanan",
   "license": "ISC",
   "devDependencies": {
