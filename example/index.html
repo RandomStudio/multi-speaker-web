@@ -2,22 +2,16 @@
   <body>
     <script src="./example.ts"></script>
     <h1>Multi Channel Web Audio</h1>
-    Example.
 
-    <button onclick="p.player.play('jump', 0);">
-      JUMP on 0
-    </button>
-    <button onclick="p.player.play('jump', 1);">
-      JUMP on 1
-    </button>
-
-    <!-- <div>
-      Jump
-      <audio controls src="clips/jump.mp3" />
+    <div>
+      <button onclick="p.player.play('jump', 0);">
+        "jump" on #0
+      </button>
     </div>
     <div>
-      Land
-      <audio controls src="clips/land.mp3" />
-    </div> -->
+      <button onclick="p.player.play('jump', 1);">
+        "jump" on #1
+      </button>
+    </div>
   </body>
 </html>
