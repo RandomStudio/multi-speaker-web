@@ -8,6 +8,14 @@ interface BufferedSample {
   isPlaying: boolean;
 }
 
+interface PlaybackOptions {
+  loop?: boolean;
+  rateVariation?: number;
+  volumeVariation?: number;
+  volumeMax?: number;
+  exclusive?: boolean;
+}
+
 type SourceMap = Record<string, string>;
 type SampleMap = Record<string, BufferedSample>;
 
@@ -86,13 +94,23 @@ export default class MultiChannelPlayer {
   };
 
   public play = (
+    keySearch: string | string[],
+    channel: number,
+    options: PlaybackOptions
+  ) => {
+    if (Array.isArray(keySearch)) {
+      keySearch.forEach(key => {
+        this.playSample(key, channel, applyDefaults(options));
+      });
+    } else {
+      this.playSample(keySearch, channel, applyDefaults(options));
+    }
+  };
+
+  private playSample = (
     key: string,
     channel: number,
-    loop: boolean = false,
-    rateVariation: number = 0,
-    volumeVariation: number = 0,
-    volumeMax: number = 1,
-    exclusive = false
+    options: PlaybackOptions
   ) => {
     const sample = this.samples[key];
     if (sample === undefined) {
@@ -108,7 +126,7 @@ export default class MultiChannelPlayer {
       throw Error("buffer not (yet?) loaded on call to play");
     }
 
-    if (exclusive && sample.isPlaying) {
+    if (options.exclusive && sample.isPlaying) {
       console.warn(`exclusive mode; clip "${key}" already playing`);
     } else {
       sample.bufferSourceNode = this.audioCtx.createBufferSource();
@@ -117,18 +135,19 @@ export default class MultiChannelPlayer {
       connectBuffer(sample, this.audioCtx);
 
       const volume = remap(
-        1 - Math.random() * volumeVariation,
+        1 - Math.random() * options.volumeVariation,
         0,
         1.0,
         0,
-        volumeMax
+        options.volumeMax
       );
-      const rate = 1 + Math.random() * rateVariation - rateVariation / 2;
+      const rate =
+        1 + Math.random() * options.rateVariation - options.rateVariation / 2;
 
       exclusiveSpeaker(this.audioCtx, sample.speakers, channel, volume);
 
       sample.bufferSourceNode.playbackRate.value = rate;
-      sample.bufferSourceNode.loop = loop;
+      sample.bufferSourceNode.loop = options.loop;
 
       sample.bufferSourceNode.start(0);
       sample.isPlaying = true;
@@ -214,3 +233,18 @@ const remap = (
   outMin: number,
   outMax: number
 ) => outMin + ((outMax - outMin) / (inMax - inMin)) * (value - inMin);
+
+const applyDefaults = (original: PlaybackOptions): PlaybackOptions => {
+  const defaults: PlaybackOptions = {
+    loop: false,
+    rateVariation: 0,
+    volumeVariation: 0,
+    volumeMax: 1,
+    exclusive: false
+  };
+  const result = original;
+  Object.keys(original).forEach(key => {
+    result[key] = original[key] === undefined ? defaults[key] : original[key];
+  });
+  return result;
+};
