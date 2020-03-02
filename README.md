@@ -87,7 +87,7 @@ Rate variation _will_ affect the pitch, too.
 
 ### Pick a sound from a list
 
-You might want to have multiple samples to randomly pick from on a single sound "event". In that case, supply an array of keys instead of a single key string:
+You might want to have multiple samples to randomly pick from on a single sound "event". Kind of like an audio "sprite sheet". In that case, supply an array of keys instead of a single key string:
 
 ```
 player.play(["beep", "boop", "bahp"], 0);
