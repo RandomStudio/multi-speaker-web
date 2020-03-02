@@ -8,7 +8,3 @@ player.loadSamples({
   jump: "/clips/jump.mp3",
   land: "/clips/land.mp3"
 });
-
-export const test = () => {
-  console.log("boo!");
-};

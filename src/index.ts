@@ -88,7 +88,7 @@ export default class MultiChannelPlayer {
   public play = (key: string, channel: number) => {
     const sample = this.samples[key];
     if (sample) {
-      console.log("found sample with key", key);
+      console.log(`found sample "${key}", play on channel #${channel}`);
       sample.bufferSourceNode = this.audioCtx.createBufferSource();
       sample.bufferSourceNode.buffer = sample.bufferData;
 
