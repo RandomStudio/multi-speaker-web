@@ -66,7 +66,7 @@ export default class MultiChannelPlayer {
               const audioData = request.response;
               console.log("response", request.response);
               this.audioCtx.decodeAudioData(audioData, buffer => {
-                // logger.debug("got audio buffer");
+                console.log(`got audio buffer for sample "${key}"`);
                 sample.bufferData = buffer;
                 resolve();
               });
@@ -86,7 +86,7 @@ export default class MultiChannelPlayer {
 
     await Promise.all(requests)
       .then(() => {
-        console.log("all samples loaded");
+        console.info("all samples loaded: ", Object.keys(this.samples));
       })
       .catch(err => {
         console.error("error loading samples:", err);
@@ -123,8 +123,8 @@ export default class MultiChannelPlayer {
     }
     console.log(`found sample "${key}", play on channel #${channel}`);
 
-    if (sample.bufferSourceNode.buffer === null) {
-      throw Error("buffer not (yet?) loaded on call to play");
+    if (sample.bufferData === null) {
+      throw Error(`buffer not (yet?) loaded on call to play "${key}"`);
     }
 
     if (options.exclusive && sample.isPlaying) {
