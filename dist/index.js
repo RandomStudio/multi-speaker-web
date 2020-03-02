@@ -47,7 +47,17 @@ class MultiChannelPlayer {
                 console.error("error loading samples:", err);
             });
         });
-        this.play = (key, channel, loop = false, rateVariation = 0, volumeVariation = 0, volumeMax = 1, exclusive = false) => {
+        this.play = (keySearch, channel, options) => {
+            if (Array.isArray(keySearch)) {
+                keySearch.forEach(key => {
+                    this.playSample(key, channel, applyDefaults(options));
+                });
+            }
+            else {
+                this.playSample(keySearch, channel, applyDefaults(options));
+            }
+        };
+        this.playSample = (key, channel, options) => {
             const sample = this.samples[key];
             if (sample === undefined) {
                 throw Error(`could not find sample with key "${key}" in sample bank ${Object.keys(this.samples)}`);
@@ -56,18 +66,18 @@ class MultiChannelPlayer {
             if (sample.bufferSourceNode.buffer === null) {
                 throw Error("buffer not (yet?) loaded on call to play");
             }
-            if (exclusive && sample.isPlaying) {
+            if (options.exclusive && sample.isPlaying) {
                 console.warn(`exclusive mode; clip "${key}" already playing`);
             }
             else {
                 sample.bufferSourceNode = this.audioCtx.createBufferSource();
                 sample.bufferSourceNode.buffer = sample.bufferData;
                 connectBuffer(sample, this.audioCtx);
-                const volume = remap(1 - Math.random() * volumeVariation, 0, 1.0, 0, volumeMax);
-                const rate = 1 + Math.random() * rateVariation - rateVariation / 2;
+                const volume = remap(1 - Math.random() * options.volumeVariation, 0, 1.0, 0, options.volumeMax);
+                const rate = 1 + Math.random() * options.rateVariation - options.rateVariation / 2;
                 exclusiveSpeaker(this.audioCtx, sample.speakers, channel, volume);
                 sample.bufferSourceNode.playbackRate.value = rate;
-                sample.bufferSourceNode.loop = loop;
+                sample.bufferSourceNode.loop = options.loop;
                 sample.bufferSourceNode.start(0);
                 sample.isPlaying = true;
                 sample.bufferSourceNode.onended = () => {
@@ -131,4 +141,18 @@ const exclusiveSpeaker = (ctx, speakers, target, maxVolume = 1) => {
     });
 };
 const remap = (value, inMin, inMax, outMin, outMax) => outMin + ((outMax - outMin) / (inMax - inMin)) * (value - inMin);
+const applyDefaults = (original) => {
+    const defaults = {
+        loop: false,
+        rateVariation: 0,
+        volumeVariation: 0,
+        volumeMax: 1,
+        exclusive: false
+    };
+    const result = original;
+    Object.keys(original).forEach(key => {
+        result[key] = original[key] === undefined ? defaults[key] : original[key];
+    });
+    return result;
+};
 //# sourceMappingURL=index.js.map
