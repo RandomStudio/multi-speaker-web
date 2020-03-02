@@ -24,7 +24,7 @@ class MultiChannelPlayer {
                             const audioData = request.response;
                             console.log("response", request.response);
                             this.audioCtx.decodeAudioData(audioData, buffer => {
-                                // logger.debug("got audio buffer");
+                                console.log(`got audio buffer for sample "${key}"`);
                                 sample.bufferData = buffer;
                                 resolve();
                             });
@@ -41,7 +41,7 @@ class MultiChannelPlayer {
             }));
             yield Promise.all(requests)
                 .then(() => {
-                console.log("all samples loaded");
+                console.info("all samples loaded: ", Object.keys(this.samples));
             })
                 .catch(err => {
                 console.error("error loading samples:", err);
@@ -63,8 +63,8 @@ class MultiChannelPlayer {
                 throw Error(`could not find sample with key "${key}" in sample bank ${Object.keys(this.samples)}`);
             }
             console.log(`found sample "${key}", play on channel #${channel}`);
-            if (sample.bufferSourceNode.buffer === null) {
-                throw Error("buffer not (yet?) loaded on call to play");
+            if (sample.bufferData === null) {
+                throw Error(`buffer not (yet?) loaded on call to play "${key}"`);
             }
             if (options.exclusive && sample.isPlaying) {
                 console.warn(`exclusive mode; clip "${key}" already playing`);
