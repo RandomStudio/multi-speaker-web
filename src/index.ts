@@ -85,29 +85,69 @@ export default class MultiChannelPlayer {
       });
   };
 
-  public play = (key: string, channel: number) => {
+  public play = (
+    key: string,
+    channel: number,
+    loop: boolean = false,
+    rateVariation: number = 0,
+    volumeVariation: number = 0,
+    volumeMax: number = 1,
+    exclusive = false
+  ) => {
     const sample = this.samples[key];
-    if (sample) {
-      console.log(`found sample "${key}", play on channel #${channel}`);
+    if (sample === undefined) {
+      throw Error(
+        `could not find sample with key "${key}" in sample bank ${Object.keys(
+          this.samples
+        )}`
+      );
+    }
+    console.log(`found sample "${key}", play on channel #${channel}`);
+
+    if (sample.bufferSourceNode.buffer === null) {
+      throw Error("buffer not (yet?) loaded on call to play");
+    }
+
+    if (exclusive && sample.isPlaying) {
+      console.warn(`exclusive mode; clip "${key}" already playing`);
+    } else {
       sample.bufferSourceNode = this.audioCtx.createBufferSource();
       sample.bufferSourceNode.buffer = sample.bufferData;
 
       connectBuffer(sample, this.audioCtx);
-      exclusiveSpeaker(this.audioCtx, sample.speakers, channel);
+
+      const volume = remap(
+        1 - Math.random() * volumeVariation,
+        0,
+        1.0,
+        0,
+        volumeMax
+      );
+      const rate = 1 + Math.random() * rateVariation - rateVariation / 2;
+
+      exclusiveSpeaker(this.audioCtx, sample.speakers, channel, volume);
+
+      sample.bufferSourceNode.playbackRate.value = rate;
+      sample.bufferSourceNode.loop = loop;
 
       sample.bufferSourceNode.start(0);
       sample.isPlaying = true;
       sample.bufferSourceNode.onended = () => {
         sample.isPlaying = false;
       };
-    } else {
-      console.error(
-        "could not find sample with key",
-        key,
-        "in sample bank: ",
-        Object.keys(this.samples)
+    }
+  };
+
+  public getIsPlaying = (key: string): boolean => {
+    const sample = this.samples[key];
+    if (sample === undefined) {
+      throw Error(
+        `could not find sample with key "${key}" in sample bank ${Object.keys(
+          this.samples
+        )}`
       );
     }
+    return sample.isPlaying;
   };
 } // end class
 
@@ -166,3 +206,11 @@ const exclusiveSpeaker = (
     }
   });
 };
+
+const remap = (
+  value: number,
+  inMin: number,
+  inMax: number,
+  outMin: number,
+  outMax: number
+) => outMin + ((outMax - outMin) / (inMax - inMin)) * (value - inMin);
