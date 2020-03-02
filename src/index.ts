@@ -96,7 +96,7 @@ export default class MultiChannelPlayer {
   public play = (
     keySearch: string | string[],
     channel: number,
-    options: PlaybackOptions
+    options?: PlaybackOptions
   ) => {
     if (Array.isArray(keySearch)) {
       keySearch.forEach(key => {
@@ -234,7 +234,7 @@ const remap = (
   outMax: number
 ) => outMin + ((outMax - outMin) / (inMax - inMin)) * (value - inMin);
 
-const applyDefaults = (original: PlaybackOptions): PlaybackOptions => {
+const applyDefaults = (original?: PlaybackOptions): PlaybackOptions => {
   const defaults: PlaybackOptions = {
     loop: false,
     rateVariation: 0,
@@ -242,9 +242,14 @@ const applyDefaults = (original: PlaybackOptions): PlaybackOptions => {
     volumeMax: 1,
     exclusive: false
   };
-  const result = original;
-  Object.keys(original).forEach(key => {
-    result[key] = original[key] === undefined ? defaults[key] : original[key];
-  });
-  return result;
+
+  if (original === undefined) {
+    return defaults;
+  } else {
+    const result = original;
+    Object.keys(original).forEach(key => {
+      result[key] = original[key] === undefined ? defaults[key] : original[key];
+    });
+    return result;
+  }
 };
