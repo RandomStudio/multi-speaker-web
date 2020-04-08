@@ -1,4 +1,6 @@
 import { SampleMap, SourceMap, PlaybackOptions, BufferedSample, PanMode } from "./types";
+import { remap } from "./utils";
+import { exclusiveSpeakerPanner } from "./panners";
 
 export default class MultiChannelPlayer {
   private numSpeakers: number;
@@ -202,44 +204,6 @@ const panner = (ctx: AudioContext, speakers: GainNode[], levels: number[]) => {
     s.gain.setValueAtTime(level, ctx.currentTime);
   });
 };
-
-export const exclusiveSpeakerPanner = (
-  target: number,
-  speakersCount: number,
-  maxVolume = 1
-): number[] => {
-  if (target > speakersCount) {
-    throw Error(`target index ${target} exceeds speaker count ${speakersCount}`);
-  }
-  let levels = Array(speakersCount).fill(0);
-  return levels.map((speaker, index) => (index === Math.round(target) ? maxVolume : 0));
-};
-
-// const linearPairsPanner = (
-//   ctx: AudioContext,
-//   speakers: GainNode[],
-//   target: number,
-//   maxVolume = 1
-// ) => {
-//   const pairIndex = {
-//     left: Math.floor(target),
-//     right: Math.ceil(target)
-//   };
-//   const relativePan = target - pairIndex.left;
-
-//   speakers.forEach((s, index) => {
-//     if (index === pairIndex.left) {
-//       s.gain.setValueAtTime(1 - relativePan, ctx.currentTime); // inverse of relative "pan"
-//     } else if (index === pairIndex.right) {
-//       s.gain.setValueAtTime(relativePan, ctx.currentTime); // relative "pan"
-//     } else {
-//       s.gain.setValueAtTime(0, ctx.currentTime);
-//     }
-//   });
-// };
-
-const remap = (value: number, inMin: number, inMax: number, outMin: number, outMax: number) =>
-  outMin + ((outMax - outMin) / (inMax - inMin)) * (value - inMin);
 
 const applyDefaults = (original?: PlaybackOptions): PlaybackOptions => {
   const defaults: PlaybackOptions = {

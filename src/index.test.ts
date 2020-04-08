@@ -1,4 +1,4 @@
-import { exclusiveSpeakerPanner } from ".";
+import { exclusiveSpeakerPanner } from "./panners";
 
 describe("panning algorithms", () => {
   describe("exlusive speaker panning", () => {
@@ -56,6 +56,17 @@ describe("panning algorithms", () => {
       expect(() => {
         const levels = exclusiveSpeakerPanner(target, speakerCount);
       }).toThrow();
+    });
+    test("3 speakers; position 2 (full on index 2), volume lowered", () => {
+      const target = 2;
+      const speakerCount = 3;
+      const maxVolume = 0.6;
+      const levels = exclusiveSpeakerPanner(target, speakerCount, maxVolume);
+
+      expect(levels).toHaveLength(speakerCount);
+      expect(levels[0]).toEqual(0);
+      expect(levels[1]).toEqual(0);
+      expect(levels[2]).toEqual(maxVolume);
     });
   });
 });
