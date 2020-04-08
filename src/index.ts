@@ -203,7 +203,11 @@ const panner = (ctx: AudioContext, speakers: GainNode[], levels: number[]) => {
   });
 };
 
-const exclusiveSpeakerPanner = (target: number, speakersCount: number, maxVolume = 1): number[] => {
+export const exclusiveSpeakerPanner = (
+  target: number,
+  speakersCount: number,
+  maxVolume = 1
+): number[] => {
   let levels = Array(speakersCount).fill(0);
   return levels.map((speaker, index) => (index === target ? maxVolume : 0));
 };
