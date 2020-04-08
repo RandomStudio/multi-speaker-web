@@ -1,6 +1,6 @@
 {
   "name": "multi-channel-web-audio",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "description": "Multi channel, multi speaker audio for the browser",
   "main": "dist/index.js",
   "scripts": {
