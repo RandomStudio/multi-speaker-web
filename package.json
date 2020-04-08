@@ -8,6 +8,9 @@
     "build": "npx tsc",
     "example": "parcel example/index.html example/clips/**/* --out-dir example/build --global p"
   },
+  "files": [
+    "dist"
+  ],
   "keywords": [
     "audio",
     "multichannel",

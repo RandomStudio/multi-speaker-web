@@ -1,38 +1,20 @@
-interface BufferedSample {
-  src: string;
-  bufferData: AudioBuffer | null;
-  bufferSourceNode: AudioBufferSourceNode;
-  speakers: GainNode[];
-  mix: ChannelMergerNode;
-  filter?: BiquadFilterNode;
-  isPlaying: boolean;
-}
-
-interface PlaybackOptions {
-  loop?: boolean;
-  rateVariation?: number;
-  volumeVariation?: number;
-  volumeMax?: number;
-  exclusive?: boolean;
-}
-
-type SourceMap = Record<string, string>;
-type SampleMap = Record<string, BufferedSample>;
+import { SampleMap, SourceMap, PlaybackOptions, BufferedSample, PanMode } from "./types";
 
 export default class MultiChannelPlayer {
+  private numSpeakers: number;
+  private panMode: PanMode;
   private samples: SampleMap;
   private audioCtx: AudioContext;
-  private numSpeakers: number;
 
-  constructor(numSpeakers: number) {
+  constructor(numSpeakers: number = 2, panMode: PanMode = PanMode.EXCLUSIVE) {
     this.numSpeakers = numSpeakers;
+    this.panMode = panMode;
     this.audioCtx = new window.AudioContext();
     this.audioCtx.destination.channelInterpretation = "discrete";
 
     const maxChannelCount = this.audioCtx.destination.maxChannelCount;
 
-    this.numSpeakers =
-      this.audioCtx.destination.maxChannelCount > 2 ? numSpeakers : 2;
+    this.numSpeakers = this.audioCtx.destination.maxChannelCount > 2 ? numSpeakers : 2;
     this.audioCtx.destination.channelCount = maxChannelCount;
 
     console.log(
@@ -47,11 +29,7 @@ export default class MultiChannelPlayer {
   }
 
   public loadSamples = async (sources: SourceMap): Promise<void> => {
-    this.samples = createBufferedSamples(
-      sources,
-      this.audioCtx,
-      this.numSpeakers
-    );
+    this.samples = createBufferedSamples(sources, this.audioCtx, this.numSpeakers);
 
     const requests = Object.keys(this.samples).map(
       async key =>
@@ -93,11 +71,7 @@ export default class MultiChannelPlayer {
       });
   };
 
-  public play = (
-    keySearch: string | string[],
-    channel: number,
-    options?: PlaybackOptions
-  ) => {
+  public play = (keySearch: string | string[], channel: number, options?: PlaybackOptions) => {
     if (Array.isArray(keySearch)) {
       const pick = Math.floor(Math.random() * keySearch.length);
       this.playSample(keySearch[pick], channel, applyDefaults(options));
@@ -108,17 +82,11 @@ export default class MultiChannelPlayer {
 
   public getSampleKeys = () => Object.keys(this.samples);
 
-  private playSample = (
-    key: string,
-    channel: number,
-    options: PlaybackOptions
-  ) => {
+  private playSample = (key: string, channel: number, options: PlaybackOptions) => {
     const sample = this.samples[key];
     if (sample === undefined) {
       throw Error(
-        `could not find sample with key "${key}" in sample bank ${Object.keys(
-          this.samples
-        )}`
+        `could not find sample with key "${key}" in sample bank ${Object.keys(this.samples)}`
       );
     }
     // console.log(`found sample "${key}", play on channel #${channel}`);
@@ -142,8 +110,7 @@ export default class MultiChannelPlayer {
         0,
         options.volumeMax
       );
-      const rate =
-        1 + Math.random() * options.rateVariation - options.rateVariation / 2;
+      const rate = 1 + Math.random() * options.rateVariation - options.rateVariation / 2;
 
       exclusiveSpeaker(this.audioCtx, sample.speakers, channel, volume);
 
@@ -162,9 +129,7 @@ export default class MultiChannelPlayer {
     const sample = this.samples[key];
     if (sample === undefined) {
       throw Error(
-        `could not find sample with key "${key}" in sample bank ${Object.keys(
-          this.samples
-        )}`
+        `could not find sample with key "${key}" in sample bank ${Object.keys(this.samples)}`
       );
     }
     return sample.isPlaying;
@@ -227,13 +192,8 @@ const exclusiveSpeaker = (
   });
 };
 
-const remap = (
-  value: number,
-  inMin: number,
-  inMax: number,
-  outMin: number,
-  outMax: number
-) => outMin + ((outMax - outMin) / (inMax - inMin)) * (value - inMin);
+const remap = (value: number, inMin: number, inMax: number, outMin: number, outMax: number) =>
+  outMin + ((outMax - outMin) / (inMax - inMin)) * (value - inMin);
 
 const applyDefaults = (original?: PlaybackOptions): PlaybackOptions => {
   const defaults: PlaybackOptions = {
