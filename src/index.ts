@@ -114,10 +114,14 @@ export default class MultiChannelPlayer {
 
       switch (this.panMode) {
         case PanMode.EXCLUSIVE:
-          exclusiveSpeakerPanner(this.audioCtx, sample.speakers, position, volume);
+          panner(
+            this.audioCtx,
+            sample.speakers,
+            exclusiveSpeakerPanner(position, this.numSpeakers, volume)
+          );
           break;
         case PanMode.LINEAR_PAIRS:
-          linearPairsPanner(this.audioCtx, sample.speakers, position, volume);
+          // linearPairsPanner(this.audioCtx, sample.speakers, position, volume);
           break;
         default:
           console.error("unknown panMode:", this.panMode);
@@ -186,43 +190,46 @@ const connectBuffer = (sample: BufferedSample, ctx: AudioContext) => {
   sample.mix.connect(ctx.destination);
 };
 
-const exclusiveSpeakerPanner = (
-  ctx: AudioContext,
-  speakers: GainNode[],
-  target: number,
-  maxVolume = 1
-) => {
+const panner = (ctx: AudioContext, speakers: GainNode[], levels: number[]) => {
+  if (speakers.length !== levels.length) {
+    throw Error("speaker gain nodes length does not match length of levels array");
+  }
   speakers.forEach((s, index) => {
-    if (index === target) {
-      s.gain.setValueAtTime(maxVolume, ctx.currentTime);
-    } else {
-      s.gain.setValueAtTime(0, ctx.currentTime);
+    const level = levels[index];
+    if (level > 1.0 || level < 0) {
+      throw Error("level is out of range: " + level);
     }
+    s.gain.setValueAtTime(level, ctx.currentTime);
   });
 };
 
-const linearPairsPanner = (
-  ctx: AudioContext,
-  speakers: GainNode[],
-  target: number,
-  maxVolume = 1
-) => {
-  const pairIndex = {
-    left: Math.floor(target),
-    right: Math.ceil(target)
-  };
-  const relativePan = target - pairIndex.left;
-
-  speakers.forEach((s, index) => {
-    if (index === pairIndex.left) {
-      s.gain.setValueAtTime(1 - relativePan, ctx.currentTime); // inverse of relative "pan"
-    } else if (index === pairIndex.right) {
-      s.gain.setValueAtTime(relativePan, ctx.currentTime); // relative "pan"
-    } else {
-      s.gain.setValueAtTime(0, ctx.currentTime);
-    }
-  });
+const exclusiveSpeakerPanner = (target: number, speakersCount: number, maxVolume = 1): number[] => {
+  let levels = Array(speakersCount).fill(0);
+  return levels.map((speaker, index) => (index === target ? maxVolume : 0));
 };
+
+// const linearPairsPanner = (
+//   ctx: AudioContext,
+//   speakers: GainNode[],
+//   target: number,
+//   maxVolume = 1
+// ) => {
+//   const pairIndex = {
+//     left: Math.floor(target),
+//     right: Math.ceil(target)
+//   };
+//   const relativePan = target - pairIndex.left;
+
+//   speakers.forEach((s, index) => {
+//     if (index === pairIndex.left) {
+//       s.gain.setValueAtTime(1 - relativePan, ctx.currentTime); // inverse of relative "pan"
+//     } else if (index === pairIndex.right) {
+//       s.gain.setValueAtTime(relativePan, ctx.currentTime); // relative "pan"
+//     } else {
+//       s.gain.setValueAtTime(0, ctx.currentTime);
+//     }
+//   });
+// };
 
 const remap = (value: number, inMin: number, inMax: number, outMin: number, outMax: number) =>
   outMin + ((outMax - outMin) / (inMax - inMin)) * (value - inMin);
