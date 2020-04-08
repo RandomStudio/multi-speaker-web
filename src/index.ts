@@ -2,6 +2,8 @@ import { SampleMap, SourceMap, PlaybackOptions, BufferedSample, PanMode } from "
 import { remap } from "./utils";
 import { exclusiveSpeakerPanner, linearPairsPanner } from "./panners";
 
+export * from "./types";
+
 export default class MultiChannelPlayer {
   private numSpeakers: number;
   private panMode: PanMode;
