@@ -1,6 +1,6 @@
 import { SampleMap, SourceMap, PlaybackOptions, BufferedSample, PanMode } from "./types";
 import { remap } from "./utils";
-import { exclusiveSpeakerPanner } from "./panners";
+import { exclusiveSpeakerPanner, linearPairsPanner } from "./panners";
 
 export default class MultiChannelPlayer {
   private numSpeakers: number;
@@ -123,7 +123,11 @@ export default class MultiChannelPlayer {
           );
           break;
         case PanMode.LINEAR_PAIRS:
-          // linearPairsPanner(this.audioCtx, sample.speakers, position, volume);
+          panner(
+            this.audioCtx,
+            sample.speakers,
+            linearPairsPanner(position, this.numSpeakers, volume)
+          );
           break;
         default:
           console.error("unknown panMode:", this.panMode);
