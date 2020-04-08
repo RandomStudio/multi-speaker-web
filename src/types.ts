@@ -10,7 +10,9 @@ export interface BufferedSample {
 
 export enum PanMode {
   EXCLUSIVE,
-  LINEAR
+  LINEAR_PAIRS,
+  LINEAR_WITH_SPREAD,
+  POSITIONAL_2D
 }
 
 export interface PlaybackOptions {
@@ -18,7 +20,7 @@ export interface PlaybackOptions {
   rateVariation?: number;
   volumeVariation?: number;
   volumeMax?: number;
-  exclusive?: boolean;
+  doNotInterrupt?: boolean;
 }
 
 export type SourceMap = Record<string, string>;

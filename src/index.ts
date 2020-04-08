@@ -71,18 +71,18 @@ export default class MultiChannelPlayer {
       });
   };
 
-  public play = (keySearch: string | string[], channel: number, options?: PlaybackOptions) => {
+  public play = (keySearch: string | string[], position: number, options?: PlaybackOptions) => {
     if (Array.isArray(keySearch)) {
       const pick = Math.floor(Math.random() * keySearch.length);
-      this.playSample(keySearch[pick], channel, applyDefaults(options));
+      this.playSample(keySearch[pick], position, applyDefaults(options));
     } else {
-      this.playSample(keySearch, channel, applyDefaults(options));
+      this.playSample(keySearch, position, applyDefaults(options));
     }
   };
 
   public getSampleKeys = () => Object.keys(this.samples);
 
-  private playSample = (key: string, channel: number, options: PlaybackOptions) => {
+  private playSample = (key: string, position: number, options: PlaybackOptions) => {
     const sample = this.samples[key];
     if (sample === undefined) {
       throw Error(
@@ -95,8 +95,8 @@ export default class MultiChannelPlayer {
       throw Error(`buffer not (yet?) loaded on call to play "${key}"`);
     }
 
-    if (options.exclusive && sample.isPlaying) {
-      console.warn(`exclusive mode; clip "${key}" already playing`);
+    if (options.doNotInterrupt && sample.isPlaying) {
+      console.warn(`doNotInterrupt option set; clip "${key}" already playing`);
     } else {
       sample.bufferSourceNode = this.audioCtx.createBufferSource();
       sample.bufferSourceNode.buffer = sample.bufferData;
@@ -112,7 +112,16 @@ export default class MultiChannelPlayer {
       );
       const rate = 1 + Math.random() * options.rateVariation - options.rateVariation / 2;
 
-      exclusiveSpeaker(this.audioCtx, sample.speakers, channel, volume);
+      switch (this.panMode) {
+        case PanMode.EXCLUSIVE:
+          exclusiveSpeakerPanner(this.audioCtx, sample.speakers, position, volume);
+          break;
+        case PanMode.LINEAR_PAIRS:
+          linearPairsPanner(this.audioCtx, sample.speakers, position, volume);
+          break;
+        default:
+          console.error("unknown panMode:", this.panMode);
+      }
 
       sample.bufferSourceNode.playbackRate.value = rate;
       sample.bufferSourceNode.loop = options.loop;
@@ -177,7 +186,7 @@ const connectBuffer = (sample: BufferedSample, ctx: AudioContext) => {
   sample.mix.connect(ctx.destination);
 };
 
-const exclusiveSpeaker = (
+const exclusiveSpeakerPanner = (
   ctx: AudioContext,
   speakers: GainNode[],
   target: number,
@@ -186,6 +195,29 @@ const exclusiveSpeaker = (
   speakers.forEach((s, index) => {
     if (index === target) {
       s.gain.setValueAtTime(maxVolume, ctx.currentTime);
+    } else {
+      s.gain.setValueAtTime(0, ctx.currentTime);
+    }
+  });
+};
+
+const linearPairsPanner = (
+  ctx: AudioContext,
+  speakers: GainNode[],
+  target: number,
+  maxVolume = 1
+) => {
+  const pairIndex = {
+    left: Math.floor(target),
+    right: Math.ceil(target)
+  };
+  const relativePan = target - pairIndex.left;
+
+  speakers.forEach((s, index) => {
+    if (index === pairIndex.left) {
+      s.gain.setValueAtTime(1 - relativePan, ctx.currentTime); // inverse of relative "pan"
+    } else if (index === pairIndex.right) {
+      s.gain.setValueAtTime(relativePan, ctx.currentTime); // relative "pan"
     } else {
       s.gain.setValueAtTime(0, ctx.currentTime);
     }
@@ -201,7 +233,7 @@ const applyDefaults = (original?: PlaybackOptions): PlaybackOptions => {
     rateVariation: 0,
     volumeVariation: 0,
     volumeMax: 1,
-    exclusive: false
+    doNotInterrupt: false
   };
 
   if (original === undefined) {
