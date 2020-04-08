@@ -1,6 +1,8 @@
 # Multi Channel Web Audio
 
-Provides a convenient audio engine that can route sounds to specific speakers in a multi-channel (more than 2 speakers) environment.
+The Web Audio API provides a sophisticated [PannerNode](https://developer.mozilla.org/en-US/docs/Web/API/PannerNode) but it is hard-coded to assume a stereo (2 channel) output. How do you send audio to specific speakers in a multi-channel (more than 2 speakers) setup?
+
+This library provides a convenient audio engine that can route sounds to specific speakers. More sophisticated positional audio (locating a sound between speakers in a 4 channel setup, for example) is being added.
 
 ## Setup
 
