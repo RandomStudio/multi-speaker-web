@@ -208,8 +208,11 @@ export const exclusiveSpeakerPanner = (
   speakersCount: number,
   maxVolume = 1
 ): number[] => {
+  if (target > speakersCount) {
+    throw Error(`target index ${target} exceeds speaker count ${speakersCount}`);
+  }
   let levels = Array(speakersCount).fill(0);
-  return levels.map((speaker, index) => (index === target ? maxVolume : 0));
+  return levels.map((speaker, index) => (index === Math.round(target) ? maxVolume : 0));
 };
 
 // const linearPairsPanner = (
