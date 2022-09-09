@@ -1,6 +1,6 @@
 {
   "name": "@randomstudio/multi-channel-web-audio",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Multi channel, multi speaker audio for the browser",
   "main": "dist/index.js",
   "scripts": {
@@ -8,6 +8,7 @@
     "build": "npx tsc",
     "example": "npx vite"
   },
+  "repository": "https://github.com/RandomStudio/tether",
   "keywords": [
     "audio",
     "multichannel",
@@ -25,5 +26,8 @@
   },
   "browserslist": [
     "last 1 Chrome versions"
-  ]
+  ],
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  }
 }
