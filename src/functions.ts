@@ -1,3 +1,4 @@
+import { NONZERO_SILENCE } from "./config";
 import { SourceMap, BufferedSample, PlaybackConfig } from "./types";
 
 export const getGainNodes = (
@@ -56,18 +57,27 @@ export const exclusiveOutputChannel = (
   outputChannels.forEach((s, index) => {
     if (index === target) {
       if (fadeInDuration > 0) {
+        console.log(
+          "Fade in over",
+          fadeInDuration,
+          "ms to volume",
+          maxVolume.toFixed(2),
+          "..."
+        );
         // Fade in, so first set volume to 0...
-        s.gain.setValueAtTime(0, ctx.currentTime);
+        s.gain.setValueAtTime(NONZERO_SILENCE, ctx.currentTime);
         // ...then schedule maxVolume at currentTime plus fadeInDuration
         s.gain.exponentialRampToValueAtTime(
-          maxVolume,
-          ctx.currentTime + fadeInDuration
+          1.0,
+          ctx.currentTime + fadeInDuration / 1000
         );
       } else {
         // No fade; just set to maxVolume "immediately"
         s.gain.setValueAtTime(maxVolume, ctx.currentTime);
       }
     } else {
+      // Every other output channel: set to zero volume
+      // console.log("set outputChannel", index, "to zero volume");
       s.gain.setValueAtTime(0, ctx.currentTime);
     }
   });

@@ -95,5 +95,6 @@ You can also run a small browser demo to test again, with `npm run example`
 
 - [x] Remove all random picking, random variations (outside the scope of this library; should be handled by client library/application)
 - [x] Revisit "applyDefaults" mechanism / types
+- [ ] It should be possible to play sample multiple times simultaneously (currently, "exclusive" mode prevents strange issues)
 - [ ] Should be possible to play sample via multiple channels (same volume)
 - [ ] Should be possible to play sample with custom "panning" between multiple channels (pseudo-spatialised audio)

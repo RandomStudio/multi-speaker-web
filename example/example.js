@@ -27,15 +27,26 @@ for (let channel = 0; channel < NUM_CHANNELS; channel++) {
     hitRoot.appendChild(b);
   });
 
-  // Loops
-  const loopRoot = document.getElementById("loops");
+  // Loops (now)
+  const loopsNowRoot = document.getElementById("loops-now");
   player.getSampleKeys().forEach(s => {
     const b = document.createElement("button");
-    b.innerText = `CH# ${channel}: Loop ${s}`;
+    b.innerText = `CH# ${channel}: Loop ${s} (now)`;
     b.onclick = _ev => {
       player.play(s, channel, { loop: true });
     };
-    loopRoot.appendChild(b);
+    loopsNowRoot.appendChild(b);
+  });
+
+  // Loops (now)
+  const loopsFadeRoot = document.getElementById("loops-fade");
+  player.getSampleKeys().forEach(s => {
+    const b = document.createElement("button");
+    b.innerText = `CH# ${channel}: Loop ${s} (fade)`;
+    b.onclick = _ev => {
+      player.play(s, channel, { loop: true, fadeInDuration: 3000 });
+    };
+    loopsFadeRoot.appendChild(b);
   });
 }
 

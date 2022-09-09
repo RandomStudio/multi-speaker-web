@@ -163,9 +163,9 @@ export default class MultiChannelPlayer {
           );
         }
       });
-      // Stop a second later
+      // Stop shortly after
       sample.bufferSourceNode.stop(
-        this.audioCtx.currentTime + fadeOutDuration / 1000 + 1
+        this.audioCtx.currentTime + fadeOutDuration / 1000 + 0.01
       );
     }
   };
