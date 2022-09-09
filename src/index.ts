@@ -1,4 +1,4 @@
-import { defaults } from "./config";
+import { defaults, NONZERO_SILENCE } from "./config";
 import {
   createBufferedSamples,
   connectBuffer,
@@ -155,10 +155,10 @@ export default class MultiChannelPlayer {
       // Fade out. We don't have to be picky about output channels here,
       // because all will go to zero anyway (even if they are already zero, i.e. unused)
       sample.outputChannels.forEach(channel => {
-        if (channel.gain.value > 0.01) {
+        if (channel.gain.value > NONZERO_SILENCE) {
           channel.gain.setValueAtTime(1.0, this.audioCtx.currentTime);
           channel.gain.exponentialRampToValueAtTime(
-            0.01,
+            NONZERO_SILENCE,
             this.audioCtx.currentTime + fadeOutDuration / 1000
           );
         }

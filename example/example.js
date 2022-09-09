@@ -2,7 +2,9 @@ import MultiChannelPlayer from "../dist";
 
 console.log("Loaded!");
 
-export const player = new MultiChannelPlayer(2);
+const NUM_CHANNELS = 2;
+
+export const player = new MultiChannelPlayer(NUM_CHANNELS);
 
 player.loadSamples({
   jump: "/jump.mp3",
@@ -12,35 +14,37 @@ player.loadSamples({
 
 console.log({ sampleKeys: player.getSampleKeys() });
 
-// Hits
-const hitRoot = document.getElementById("hits");
-player.getSampleKeys().forEach(s => {
-  const b = document.createElement("button");
-  b.innerText = `Hit ${s}`;
-  b.onclick = ev => {
-    player.play(s, 0);
-  };
-  hitRoot.appendChild(b);
-});
+for (let channel = 0; channel < NUM_CHANNELS; channel++) {
+  // Hits
+  const hitRoot = document.getElementById("hits");
+  player.getSampleKeys().forEach(s => {
+    const b = document.createElement("button");
+    b.innerText = `CH# ${channel}: Hit ${s}`;
+    b.onclick = _ev => {
+      console.log("play on channel", channel);
+      player.play(s, channel);
+    };
+    hitRoot.appendChild(b);
+  });
 
-// Loops
-const loopRoot = document.getElementById("loops");
-
-player.getSampleKeys().forEach(s => {
-  const b = document.createElement("button");
-  b.innerText = `Loop ${s}`;
-  b.onclick = ev => {
-    player.play(s, 0, { loop: true });
-  };
-  loopRoot.appendChild(b);
-});
+  // Loops
+  const loopRoot = document.getElementById("loops");
+  player.getSampleKeys().forEach(s => {
+    const b = document.createElement("button");
+    b.innerText = `CH# ${channel}: Loop ${s}`;
+    b.onclick = _ev => {
+      player.play(s, channel, { loop: true });
+    };
+    loopRoot.appendChild(b);
+  });
+}
 
 // Stop (now)
 const stopNowRoot = document.getElementById("stop-now");
 player.getSampleKeys().forEach(s => {
   const b = document.createElement("button");
   b.innerText = `Stop ${s} (now)`;
-  b.onclick = ev => {
+  b.onclick = _ev => {
     player.stop(s);
   };
   stopNowRoot.appendChild(b);
@@ -48,11 +52,10 @@ player.getSampleKeys().forEach(s => {
 
 // Stop (now)
 const stopFadeRoot = document.getElementById("stop-fade");
-
 player.getSampleKeys().forEach(s => {
   const b = document.createElement("button");
   b.innerText = `Stop ${s} (fade)`;
-  b.onclick = ev => {
+  b.onclick = _ev => {
     player.stop(s, 2000);
   };
   stopFadeRoot.appendChild(b);
