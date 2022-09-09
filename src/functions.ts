@@ -1,5 +1,22 @@
 import { SourceMap, BufferedSample, PlaybackConfig } from "./types";
 
+
+export const getGainNodes = (
+  numOutputChannels: number,
+  ctx: AudioContext
+): GainNode[] => {
+  const g: GainNode[] = [];
+  for (let i = 0; i < numOutputChannels; i++) {
+    const node = ctx.createGain();
+    node.channelCountMode = "explicit";
+    node.channelCount = 1;
+    node.channelInterpretation = "discrete";
+    g.push(node);
+  }
+  return g;
+};
+
+
 export const createBufferedSamples = (
   sources: SourceMap,
   ctx: AudioContext,
@@ -20,21 +37,6 @@ export const createBufferedSamples = (
     ],
     []
   );
-
-export const getGainNodes = (
-  numOutputChannels: number,
-  ctx: AudioContext
-): GainNode[] => {
-  const g: GainNode[] = [];
-  for (let i = 0; i < numOutputChannels; i++) {
-    const node = ctx.createGain();
-    node.channelCountMode = "explicit";
-    node.channelCount = 1;
-    node.channelInterpretation = "discrete";
-    g.push(node);
-  }
-  return g;
-};
 
 export const connectBuffer = (sample: BufferedSample, ctx: AudioContext) => {
   sample.outputChannels.forEach((g, index) => {

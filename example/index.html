@@ -1,27 +1,8 @@
 <html>
   <body>
-    <script src="./example.ts"></script>
+    <script type="module" src="./example.js"></script>
     <h1>Multi Channel Web Audio</h1>
 
-    <div>
-      <button onclick="p.player.play('jump', 0);">
-        "jump" on #0
-      </button>
-    </div>
-    <div>
-      <button onclick="p.player.play('jump', 1);">
-        "jump" on #1
-      </button>
-    </div>
-    <div>
-      <button onclick="p.player.play('ambience', 1, { loop: true });">
-        start (loop) "ambience" on #0
-      </button>
-    </div>
-    <div>
-      <button onclick="p.player.stop('ambience');">
-        stoop "ambience"
-      </button>
-    </div>
+    <div id="buttons"></div>
   </body>
 </html>

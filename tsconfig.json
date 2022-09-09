@@ -1,14 +1,7 @@
 {
+  "extends": "@tsconfig/esm/tsconfig.json",
   "compilerOptions": {
-    "module": "commonjs",
-    "esModuleInterop": true,
-    "target": "es6",
-    "moduleResolution": "node",
-    "sourceMap": true,
-    "outDir": "dist",
-    "declaration": true
-  },
-  "include": ["src/**/*"],
-  "exclude": [],
-  "lib": ["es2015"]
+    "lib": ["DOM", "ESNext"],
+    "outDir": "dist"
+  }
 }

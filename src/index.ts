@@ -48,7 +48,7 @@ export default class MultiChannelPlayer {
     const requests = Object.keys(this.samples).map(
       async key =>
         new Promise<void>((resolve, reject) => {
-          const sample = this.samples[key];
+          const sample = this.getSample(key);
           console.log("load sample for", sample.src);
           if (sample) {
             const request = new XMLHttpRequest();
@@ -138,7 +138,7 @@ export default class MultiChannelPlayer {
    * @param fadeOutDuration Optional fade duration, in milliseconds
    */
   public stop = (keySearch: string, fadeOutDuration = 0) => {
-    const sample = this.samples.find(s => s.id === keySearch);
+    const sample = this.getSample(keySearch);
     if (fadeOutDuration === 0) {
       // No fade out; stop "now"
       sample.bufferSourceNode.stop();

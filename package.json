@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "npx tsc",
-    "example": "parcel example/index.html example/clips/**/* --out-dir example/build --global p"
+    "example": "npx vite"
   },
   "keywords": [
     "audio",
@@ -17,6 +17,8 @@
   "author": "Stephen Buchanan",
   "license": "ISC",
   "devDependencies": {
+    "@tsconfig/esm": "^1.0.2",
+    "@tsconfig/recommended": "^1.0.1",
     "prettier": "^1.19.1",
     "typescript": "^4.8.3",
     "vite": "^3.1.0"
