@@ -8,7 +8,10 @@
     "build": "npx tsc",
     "example": "npx vite"
   },
-  "repository": "https://github.com/RandomStudio/multi-speaker-web",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/RandomStudio/multi-speaker-web"
+  },
   "keywords": [
     "audio",
     "multichannel",
