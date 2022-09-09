@@ -2,7 +2,7 @@ interface BufferedSample {
   src: string;
   bufferData: AudioBuffer | null;
   bufferSourceNode: AudioBufferSourceNode;
-  speakers: GainNode[];
+  outputChannels: GainNode[];
   mix: ChannelMergerNode;
   filter?: BiquadFilterNode;
   isPlaying: boolean;
@@ -22,23 +22,23 @@ type SampleMap = Record<string, BufferedSample>;
 export default class MultiChannelPlayer {
   private samples: SampleMap;
   private audioCtx: AudioContext;
-  private numSpeakers: number;
+  private numOutputChannels: number;
 
-  constructor(numSpeakers: number) {
-    this.numSpeakers = numSpeakers;
+  constructor(numOutputChannels: number) {
+    this.numOutputChannels = numOutputChannels;
     this.audioCtx = new window.AudioContext();
     this.audioCtx.destination.channelInterpretation = "discrete";
 
     const maxChannelCount = this.audioCtx.destination.maxChannelCount;
 
-    this.numSpeakers =
-      this.audioCtx.destination.maxChannelCount > 2 ? numSpeakers : 2;
+    this.numOutputChannels =
+      this.audioCtx.destination.maxChannelCount > 2 ? numOutputChannels : 2;
     this.audioCtx.destination.channelCount = maxChannelCount;
 
     console.log(
       "requested",
-      numSpeakers,
-      "speakers; got",
+      numOutputChannels,
+      "outputChannels; got",
       this.audioCtx.destination.channelCount,
       "channels for output"
     );
@@ -50,7 +50,7 @@ export default class MultiChannelPlayer {
     this.samples = createBufferedSamples(
       sources,
       this.audioCtx,
-      this.numSpeakers
+      this.numOutputChannels
     );
 
     const requests = Object.keys(this.samples).map(
@@ -145,7 +145,7 @@ export default class MultiChannelPlayer {
       const rate =
         1 + Math.random() * options.rateVariation - options.rateVariation / 2;
 
-      exclusiveSpeaker(this.audioCtx, sample.speakers, channel, volume);
+      exclusiveOutputChannel(this.audioCtx, sample.outputChannels, channel, volume);
 
       sample.bufferSourceNode.playbackRate.value = rate;
       sample.bufferSourceNode.loop = options.loop;
@@ -174,7 +174,7 @@ export default class MultiChannelPlayer {
 const createBufferedSamples = (
   sources: SourceMap,
   ctx: AudioContext,
-  numSpeakers: number
+  numOutputChannels: number
 ): SampleMap =>
   Object.keys(sources).reduce<SampleMap>(
     (result, key) => ({
@@ -183,17 +183,17 @@ const createBufferedSamples = (
         src: sources[key],
         bufferSourceNode: ctx.createBufferSource(),
         bufferData: null,
-        speakers: getGainNodes(numSpeakers, ctx),
-        mix: ctx.createChannelMerger(numSpeakers),
+        outputChannels: getGainNodes(numOutputChannels, ctx),
+        mix: ctx.createChannelMerger(numOutputChannels),
         isPlaying: false
       }
     }),
     {}
   );
 
-const getGainNodes = (numSpeakers: number, ctx: AudioContext): GainNode[] => {
+const getGainNodes = (numOutputChannels: number, ctx: AudioContext): GainNode[] => {
   const g: GainNode[] = [];
-  for (let i = 0; i < numSpeakers; i++) {
+  for (let i = 0; i < numOutputChannels; i++) {
     const node = ctx.createGain();
     node.channelCountMode = "explicit";
     node.channelCount = 1;
@@ -204,7 +204,7 @@ const getGainNodes = (numSpeakers: number, ctx: AudioContext): GainNode[] => {
 };
 
 const connectBuffer = (sample: BufferedSample, ctx: AudioContext) => {
-  sample.speakers.forEach((g, index) => {
+  sample.outputChannels.forEach((g, index) => {
     sample.bufferSourceNode.connect(g);
     g.connect(sample.mix, 0, index);
   });
@@ -212,13 +212,13 @@ const connectBuffer = (sample: BufferedSample, ctx: AudioContext) => {
   sample.mix.connect(ctx.destination);
 };
 
-const exclusiveSpeaker = (
+const exclusiveOutputChannel = (
   ctx: AudioContext,
-  speakers: GainNode[],
+  outputChannels: GainNode[],
   target: number,
   maxVolume = 1
 ) => {
-  speakers.forEach((s, index) => {
+  outputChannels.forEach((s, index) => {
     if (index === target) {
       s.gain.setValueAtTime(maxVolume, ctx.currentTime);
     } else {
