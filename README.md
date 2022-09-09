@@ -58,38 +58,24 @@ Specify the sample key (it must exist in your `SourceMap`, and it must have been
 player.play("beep", 2); // plays out of speaker index 2 (third speaker)
 ```
 
-### Optional variations
+### Optional playback configuration
 
 You can pass a third parameter to `play` if you like: a `PlaybackOptions` object, specifying any or all of the following:
 
-```
-{
-  loop?: boolean = false;
-  rateVariation?: number = 0;
-  volumeVariation?: number 0;
-  volumeMax?: number = 1.0;
-  exclusive?: boolean = false;
-}
-```
+- `loop` boolean (default: `false`) - whether to loop the sample or play just once through
+- `rate`: number (default `1.0`) - playback speed multiplier (affects pitch)
+- `volume`: number (default `1.0`) - target "full" volume, from 0 (silence) to full volume (1.0)
+- `exclusive`: boolean (default `true) - whether to prevent multiple starts of the sample buffer before it finishes
 
-The rate and volume variations work in similar way. By default, `0` variation will mean that rate is 1.0 or volume is always maximum (`1.0` or a value specified in `volumeMax`).
+## Example
 
-Specifying another value will allow random variation above or below "normal" up to the range you specify. Example:
+You can run a small browser demo to test again, with `npm run example`
 
-```
-player.play("annoyingSound", 0, {
-  rateVariation: 0.5
-});
-// Sound will play in range 0.5x - 1.5x normal speed.
-```
-
-Rate variation _will_ affect the pitch, too.
+This example uses just 2 channels, to suit most test environments. Two channels obviously doesn't demonstrate the full potential of this library but does show you how to use it.
 
 ## Development
 
 The library is written in TypeScript so compiles with `npm run build`
-
-You can also run a small browser demo to test again, with `npm run example`
 
 ## TODO
 
