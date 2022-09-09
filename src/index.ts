@@ -14,6 +14,7 @@ interface PlaybackOptions {
   volumeVariation?: number;
   volumeMax?: number;
   exclusive?: boolean;
+  // fadeInDuration
 }
 
 type SourceMap = Record<string, string>;
@@ -55,7 +56,7 @@ export default class MultiChannelPlayer {
 
     const requests = Object.keys(this.samples).map(
       async key =>
-        new Promise((resolve, reject) => {
+        new Promise<void>((resolve, reject) => {
           const sample = this.samples[key];
           console.log("load sample for", sample.src);
           if (sample) {
