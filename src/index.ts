@@ -1,27 +1,13 @@
-interface BufferedSample {
-  src: string;
-  bufferData: AudioBuffer | null;
-  bufferSourceNode: AudioBufferSourceNode;
-  outputChannels: GainNode[];
-  mix: ChannelMergerNode;
-  filter?: BiquadFilterNode;
-  isPlaying: boolean;
-}
-
-interface PlaybackOptions {
-  loop?: boolean;
-  rateVariation?: number;
-  volumeVariation?: number;
-  volumeMax?: number;
-  exclusive?: boolean;
-  // fadeInDuration
-}
-
-type SourceMap = Record<string, string>;
-type SampleMap = Record<string, BufferedSample>;
+import {
+  createBufferedSamples,
+  applyDefaults,
+  connectBuffer,
+  exclusiveOutputChannel
+} from "./functions";
+import { BufferedSample, SourceMap, PlaybackOptions } from "./types";
 
 export default class MultiChannelPlayer {
-  private samples: SampleMap;
+  private samples: BufferedSample[];
   private audioCtx: AudioContext;
   private numOutputChannels: number;
 
@@ -44,7 +30,7 @@ export default class MultiChannelPlayer {
       "channels for output"
     );
 
-    this.samples = {};
+    this.samples = [];
   }
 
   public loadSamples = async (sources: SourceMap): Promise<void> => {
@@ -95,15 +81,29 @@ export default class MultiChannelPlayer {
   };
 
   public play = (
-    keySearch: string | string[],
+    keySearch: string,
     channel: number,
     options?: PlaybackOptions
   ) => {
-    if (Array.isArray(keySearch)) {
-      const pick = Math.floor(Math.random() * keySearch.length);
-      this.playSample(keySearch[pick], channel, applyDefaults(options));
+    this.playSample(keySearch, channel, applyDefaults(options));
+  };
+
+  /**
+   *
+   * @param keySearch Id of a clip to stop
+   * @param fadeOutDuration Optional fade duration, in milliseconds
+   */
+  public stop = (keySearch: string, fadeOutDuration = 0) => {
+    const sample = this.samples.find(s => s.id === keySearch);
+    if (fadeOutDuration === 0) {
+      sample.bufferSourceNode.stop();
     } else {
-      this.playSample(keySearch, channel, applyDefaults(options));
+      sample.outputChannels.forEach(channel => {
+        channel.gain.exponentialRampToValueAtTime(
+          0,
+          this.audioCtx.currentTime + fadeOutDuration / 1000
+        );
+      });
     }
   };
 
@@ -129,24 +129,23 @@ export default class MultiChannelPlayer {
     }
 
     if (options.exclusive && sample.isPlaying) {
-      console.warn(`exclusive mode; clip "${key}" already playing`);
+      console.warn(
+        `exclusive mode; clip "${key}" already playing; ignore play request`
+      );
     } else {
       sample.bufferSourceNode = this.audioCtx.createBufferSource();
       sample.bufferSourceNode.buffer = sample.bufferData;
 
       connectBuffer(sample, this.audioCtx);
 
-      const volume = remap(
-        1 - Math.random() * options.volumeVariation,
-        0,
-        1.0,
-        0,
-        options.volumeMax
-      );
-      const rate =
-        1 + Math.random() * options.rateVariation - options.rateVariation / 2;
+      const { volume, rate } = options;
 
-      exclusiveOutputChannel(this.audioCtx, sample.outputChannels, channel, volume);
+      exclusiveOutputChannel(
+        this.audioCtx,
+        sample.outputChannels,
+        channel,
+        volume
+      );
 
       sample.bufferSourceNode.playbackRate.value = rate;
       sample.bufferSourceNode.loop = options.loop;
@@ -171,87 +170,3 @@ export default class MultiChannelPlayer {
     return sample.isPlaying;
   };
 } // end class
-
-const createBufferedSamples = (
-  sources: SourceMap,
-  ctx: AudioContext,
-  numOutputChannels: number
-): SampleMap =>
-  Object.keys(sources).reduce<SampleMap>(
-    (result, key) => ({
-      ...result,
-      [key]: {
-        src: sources[key],
-        bufferSourceNode: ctx.createBufferSource(),
-        bufferData: null,
-        outputChannels: getGainNodes(numOutputChannels, ctx),
-        mix: ctx.createChannelMerger(numOutputChannels),
-        isPlaying: false
-      }
-    }),
-    {}
-  );
-
-const getGainNodes = (numOutputChannels: number, ctx: AudioContext): GainNode[] => {
-  const g: GainNode[] = [];
-  for (let i = 0; i < numOutputChannels; i++) {
-    const node = ctx.createGain();
-    node.channelCountMode = "explicit";
-    node.channelCount = 1;
-    node.channelInterpretation = "discrete";
-    g.push(node);
-  }
-  return g;
-};
-
-const connectBuffer = (sample: BufferedSample, ctx: AudioContext) => {
-  sample.outputChannels.forEach((g, index) => {
-    sample.bufferSourceNode.connect(g);
-    g.connect(sample.mix, 0, index);
-  });
-
-  sample.mix.connect(ctx.destination);
-};
-
-const exclusiveOutputChannel = (
-  ctx: AudioContext,
-  outputChannels: GainNode[],
-  target: number,
-  maxVolume = 1
-) => {
-  outputChannels.forEach((s, index) => {
-    if (index === target) {
-      s.gain.setValueAtTime(maxVolume, ctx.currentTime);
-    } else {
-      s.gain.setValueAtTime(0, ctx.currentTime);
-    }
-  });
-};
-
-const remap = (
-  value: number,
-  inMin: number,
-  inMax: number,
-  outMin: number,
-  outMax: number
-) => outMin + ((outMax - outMin) / (inMax - inMin)) * (value - inMin);
-
-const applyDefaults = (original?: PlaybackOptions): PlaybackOptions => {
-  const defaults: PlaybackOptions = {
-    loop: false,
-    rateVariation: 0,
-    volumeVariation: 0,
-    volumeMax: 1,
-    exclusive: false
-  };
-
-  if (original === undefined) {
-    return defaults;
-  } else {
-    const result = original;
-    Object.keys(original).forEach(key => {
-      result[key] = original[key] === undefined ? defaults[key] : original[key];
-    });
-    return result;
-  }
-};

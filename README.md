@@ -85,17 +85,13 @@ player.play("annoyingSound", 0, {
 
 Rate variation _will_ affect the pitch, too.
 
-### Pick a sound from a list
-
-You might want to have multiple samples to randomly pick from on a single sound "event". Kind of like an audio "sprite sheet". In that case, supply an array of keys instead of a single key string:
-
-```
-player.play(["beep", "boop", "bahp"], 0);
-// You will randomly hear either "beep", "boop" or "bahp" sample each time this is called.
-```
-
 ## Development
 
 The library is written in TypeScript so compiles with `npm run build`
 
 You can also run a small browser demo to test again, with `npm run example`
+
+## TODO
+- [x] Remove all random picking, random variations (outside the scope of this library; should be handled by client library/application)
+- [ ] Should be possible to play sample via multiple channels (same volume)
+- [ ] Should be possible to play sample with custom "panning" between multiple channels (pseudo-spatialised audio)
