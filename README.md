@@ -81,7 +81,7 @@ The library is written in TypeScript so compiles with `npm run build`
 
 - [x] Remove all random picking, random variations (outside the scope of this library; should be handled by client library/application)
 - [x] Revisit "applyDefaults" mechanism / types
-- [ ] Create a class for Sample (BufferedSample) which keeps track of its own state, and separate these from a class MixBus which has a particular multi-channel mix. Samples will therefore NOT have outputChannels, but MixBusses WILL have these; simply connect Samples (mono channel or mixdown) to MixBusses (which have single input and multiple outputs, one for each speaker)
+- [ ] Create a class for Sample (BufferedSample) which keeps track of its own state
 - [ ] It should be possible to play sample multiple times simultaneously (currently, "exclusive" mode prevents strange issues)
 - [ ] Should be possible to play sample via multiple channels (same volume)
 - [ ] Should be possible to play sample with custom "panning" between multiple channels (pseudo-spatialised audio)
