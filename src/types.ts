@@ -6,7 +6,7 @@ export interface BufferedSample {
   outputChannels: GainNode[];
   mix: ChannelMergerNode;
   filter?: BiquadFilterNode;
-  isPlaying: boolean;
+  startedAt: number | null;
 }
 
 export interface PlaybackConfig {

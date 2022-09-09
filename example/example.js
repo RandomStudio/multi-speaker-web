@@ -71,3 +71,15 @@ player.getSampleKeys().forEach(s => {
   };
   stopFadeRoot.appendChild(b);
 });
+
+// Clip states
+const stateRoot = document.getElementById("clip-states");
+player.getSampleKeys().forEach(s => {
+  const info = document.createElement("div");
+  setInterval(() => {
+    const playing = player.getIsPlaying(s);
+    const progress = playing ? player.getProgress(s) : 0;
+    info.innerText = `${s}: ${playing ? "PLAYING" : "STOPPED"} :: ${progress}`;
+  }, 100);
+  stateRoot.appendChild(info);
+});

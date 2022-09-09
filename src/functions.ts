@@ -31,7 +31,7 @@ export const createBufferedSamples = (
         bufferData: null,
         outputChannels: getGainNodes(numOutputChannels, ctx),
         mix: ctx.createChannelMerger(numOutputChannels),
-        isPlaying: false
+        startedAt: null
       }
     ],
     []

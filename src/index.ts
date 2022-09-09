@@ -108,7 +108,7 @@ export default class MultiChannelPlayer {
       throw Error(`buffer not (yet?) loaded on call to play "${keySearch}"`);
     }
 
-    if (finalOptions.exclusive && sample.isPlaying) {
+    if (finalOptions.exclusive && sample.startedAt) {
       console.warn(
         `exclusive mode; clip "${keySearch}" already playing; ignore play request`
       );
@@ -132,10 +132,10 @@ export default class MultiChannelPlayer {
       sample.bufferSourceNode.loop = finalOptions.loop;
 
       sample.bufferSourceNode.start(0);
-      sample.isPlaying = true;
+      sample.startedAt = this.audioCtx.currentTime;
       sample.bufferSourceNode.onended = () => {
         console.log(`multi-speaker-web: onended "${keySearch}"...`);
-        sample.isPlaying = false;
+        sample.startedAt = null;
       };
     }
   };
@@ -174,7 +174,13 @@ export default class MultiChannelPlayer {
 
   public getIsPlaying = (key: string): boolean => {
     const sample = this.getSample(key);
-    return sample.isPlaying;
+    return sample.startedAt !== null;
+  };
+
+  public getProgress = (key: string): number => {
+    const sample = this.getSample(key);
+    const now = this.audioCtx.currentTime;
+    return now - sample.startedAt;
   };
 
   private getSample = (key: string): BufferedSample => {
