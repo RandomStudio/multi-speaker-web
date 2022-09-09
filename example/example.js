@@ -12,34 +12,48 @@ player.loadSamples({
 
 console.log({ sampleKeys: player.getSampleKeys() });
 
-const buttonRoot = document.getElementById("buttons");
-
 // Hits
+const hitRoot = document.getElementById("hits");
 player.getSampleKeys().forEach(s => {
   const b = document.createElement("button");
   b.innerText = `Hit ${s}`;
   b.onclick = ev => {
     player.play(s, 0);
   };
-  buttonRoot.appendChild(b);
+  hitRoot.appendChild(b);
 });
 
-// // Loops
-// player.getSampleKeys().forEach(s => {
-//   const b = document.createElement("button");
-//   b.innerText = `Loop ${s}`;
-//   b.onclick = ev => {
-//     player.play(s, 0, { loop: true });
-//   };
-//   buttonRoot.appendChild(b);
-// });
+// Loops
+const loopRoot = document.getElementById("loops");
 
-// // Stop
-// player.getSampleKeys().forEach(s => {
-//   const b = document.createElement("button");
-//   b.innerText = `Stop ${s} (1000ms fade)`;
-//   b.onclick = ev => {
-//     player.stop(s, 1000);
-//   };
-//   buttonRoot.appendChild(b);
-// });
+player.getSampleKeys().forEach(s => {
+  const b = document.createElement("button");
+  b.innerText = `Loop ${s}`;
+  b.onclick = ev => {
+    player.play(s, 0, { loop: true });
+  };
+  loopRoot.appendChild(b);
+});
+
+// Stop (now)
+const stopNowRoot = document.getElementById("stop-now");
+player.getSampleKeys().forEach(s => {
+  const b = document.createElement("button");
+  b.innerText = `Stop ${s} (now)`;
+  b.onclick = ev => {
+    player.stop(s);
+  };
+  stopNowRoot.appendChild(b);
+});
+
+// Stop (now)
+const stopFadeRoot = document.getElementById("stop-fade");
+
+player.getSampleKeys().forEach(s => {
+  const b = document.createElement("button");
+  b.innerText = `Stop ${s} (fade)`;
+  b.onclick = ev => {
+    player.stop(s, 2000);
+  };
+  stopFadeRoot.appendChild(b);
+});

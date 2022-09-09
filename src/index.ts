@@ -151,13 +151,17 @@ export default class MultiChannelPlayer {
       // No fade out; stop "now"
       sample.bufferSourceNode.stop();
     } else {
+      console.log("Fade out over", fadeOutDuration, "ms ...");
       // Fade out. We don't have to be picky about output channels here,
       // because all will go to zero anyway (even if they are already zero, i.e. unused)
       sample.outputChannels.forEach(channel => {
-        channel.gain.exponentialRampToValueAtTime(
-          0,
-          this.audioCtx.currentTime + fadeOutDuration / 1000
-        );
+        if (channel.gain.value > 0.01) {
+          channel.gain.setValueAtTime(1.0, this.audioCtx.currentTime);
+          channel.gain.exponentialRampToValueAtTime(
+            0.01,
+            this.audioCtx.currentTime + fadeOutDuration / 1000
+          );
+        }
       });
       // Stop a second later
       sample.bufferSourceNode.stop(
