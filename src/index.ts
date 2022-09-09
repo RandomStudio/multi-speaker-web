@@ -1,10 +1,15 @@
+import { defaults } from "./config";
 import {
   createBufferedSamples,
-  applyDefaults,
   connectBuffer,
   exclusiveOutputChannel
 } from "./functions";
-import { BufferedSample, SourceMap, PlaybackOptions } from "./types";
+import {
+  BufferedSample,
+  SourceMap,
+  PlaybackConfig,
+  PlaybackOptions
+} from "./types";
 
 export default class MultiChannelPlayer {
   private samples: BufferedSample[];
@@ -85,7 +90,46 @@ export default class MultiChannelPlayer {
     channel: number,
     options?: PlaybackOptions
   ) => {
-    this.playSample(keySearch, channel, applyDefaults(options));
+    const sample = this.getSample(keySearch);
+
+    const finalOptions: PlaybackConfig = {
+      ...defaults,
+      ...options
+    };
+
+    if (sample.bufferData === null) {
+      throw Error(`buffer not (yet?) loaded on call to play "${keySearch}"`);
+    }
+
+    if (finalOptions.exclusive && sample.isPlaying) {
+      console.warn(
+        `exclusive mode; clip "${keySearch}" already playing; ignore play request`
+      );
+    } else {
+      sample.bufferSourceNode = this.audioCtx.createBufferSource();
+      sample.bufferSourceNode.buffer = sample.bufferData;
+
+      connectBuffer(sample, this.audioCtx);
+
+      const { volume, rate } = finalOptions;
+
+      exclusiveOutputChannel(
+        this.audioCtx,
+        sample.outputChannels,
+        channel,
+        volume,
+        finalOptions.fadeInDuration
+      );
+
+      sample.bufferSourceNode.playbackRate.value = rate;
+      sample.bufferSourceNode.loop = finalOptions.loop;
+
+      sample.bufferSourceNode.start(0);
+      sample.isPlaying = true;
+      sample.bufferSourceNode.onended = () => {
+        sample.isPlaying = false;
+      };
+    }
   };
 
   /**
@@ -96,77 +140,39 @@ export default class MultiChannelPlayer {
   public stop = (keySearch: string, fadeOutDuration = 0) => {
     const sample = this.samples.find(s => s.id === keySearch);
     if (fadeOutDuration === 0) {
+      // No fade out; stop "now"
       sample.bufferSourceNode.stop();
     } else {
+      // Fade out. We don't have to be picky about output channels here,
+      // because all will go to zero anyway (even if they are already zero, i.e. unused)
       sample.outputChannels.forEach(channel => {
         channel.gain.exponentialRampToValueAtTime(
           0,
           this.audioCtx.currentTime + fadeOutDuration / 1000
         );
       });
+      // Stop a second later
+      sample.bufferSourceNode.stop(
+        this.audioCtx.currentTime + fadeOutDuration / 1000 + 1
+      );
     }
   };
 
-  public getSampleKeys = () => Object.keys(this.samples);
-
-  private playSample = (
-    key: string,
-    channel: number,
-    options: PlaybackOptions
-  ) => {
-    const sample = this.samples[key];
-    if (sample === undefined) {
-      throw Error(
-        `could not find sample with key "${key}" in sample bank ${Object.keys(
-          this.samples
-        )}`
-      );
-    }
-    // console.log(`found sample "${key}", play on channel #${channel}`);
-
-    if (sample.bufferData === null) {
-      throw Error(`buffer not (yet?) loaded on call to play "${key}"`);
-    }
-
-    if (options.exclusive && sample.isPlaying) {
-      console.warn(
-        `exclusive mode; clip "${key}" already playing; ignore play request`
-      );
-    } else {
-      sample.bufferSourceNode = this.audioCtx.createBufferSource();
-      sample.bufferSourceNode.buffer = sample.bufferData;
-
-      connectBuffer(sample, this.audioCtx);
-
-      const { volume, rate } = options;
-
-      exclusiveOutputChannel(
-        this.audioCtx,
-        sample.outputChannels,
-        channel,
-        volume
-      );
-
-      sample.bufferSourceNode.playbackRate.value = rate;
-      sample.bufferSourceNode.loop = options.loop;
-
-      sample.bufferSourceNode.start(0);
-      sample.isPlaying = true;
-      sample.bufferSourceNode.onended = () => {
-        sample.isPlaying = false;
-      };
-    }
-  };
+  public getSampleKeys = () => this.samples.map(s => s.id);
 
   public getIsPlaying = (key: string): boolean => {
-    const sample = this.samples[key];
-    if (sample === undefined) {
+    const sample = this.getSample(key);
+    return sample.isPlaying;
+  };
+
+  private getSample = (key: string): BufferedSample => {
+    const sample = this.samples.find(s => s.id);
+    if (sample) {
+      return sample;
+    } else {
       throw Error(
-        `could not find sample with key "${key}" in sample bank ${Object.keys(
-          this.samples
-        )}`
+        `Could not find sample with key/id "${key}" in sample bank ${this.getSampleKeys()}`
       );
     }
-    return sample.isPlaying;
   };
 } // end class

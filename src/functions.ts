@@ -1,4 +1,4 @@
-import { SourceMap, BufferedSample, PlaybackOptions } from "./types";
+import { SourceMap, BufferedSample, PlaybackConfig } from "./types";
 
 export const createBufferedSamples = (
   sources: SourceMap,
@@ -6,7 +6,7 @@ export const createBufferedSamples = (
   numOutputChannels: number
 ): BufferedSample[] =>
   Object.keys(sources).reduce<BufferedSample[]>(
-    (result, key) => ([
+    (result, key) => [
       ...result,
       {
         id: key,
@@ -17,11 +17,14 @@ export const createBufferedSamples = (
         mix: ctx.createChannelMerger(numOutputChannels),
         isPlaying: false
       }
-    ]),
+    ],
     []
   );
 
-  export const getGainNodes = (numOutputChannels: number, ctx: AudioContext): GainNode[] => {
+export const getGainNodes = (
+  numOutputChannels: number,
+  ctx: AudioContext
+): GainNode[] => {
   const g: GainNode[] = [];
   for (let i = 0; i < numOutputChannels; i++) {
     const node = ctx.createGain();
@@ -46,11 +49,23 @@ export const exclusiveOutputChannel = (
   ctx: AudioContext,
   outputChannels: GainNode[],
   target: number,
-  maxVolume = 1
+  maxVolume = 1,
+  fadeInDuration = 0
 ) => {
   outputChannels.forEach((s, index) => {
     if (index === target) {
-      s.gain.setValueAtTime(maxVolume, ctx.currentTime);
+      if (fadeInDuration > 0) {
+        // Fade in, so first set volume to 0...
+        s.gain.setValueAtTime(0, ctx.currentTime);
+        // ...then schedule maxVolume at currentTime plus fadeInDuration
+        s.gain.exponentialRampToValueAtTime(
+          maxVolume,
+          ctx.currentTime + fadeInDuration
+        );
+      } else {
+        // No fade; just set to maxVolume "immediately"
+        s.gain.setValueAtTime(maxVolume, ctx.currentTime);
+      }
     } else {
       s.gain.setValueAtTime(0, ctx.currentTime);
     }
@@ -64,22 +79,3 @@ export const remap = (
   outMin: number,
   outMax: number
 ) => outMin + ((outMax - outMin) / (inMax - inMin)) * (value - inMin);
-
-export const applyDefaults = (original?: PlaybackOptions): PlaybackOptions => {
-  const defaults: PlaybackOptions = {
-    loop: false,
-    rate: 1,
-    volume: 1,
-    exclusive: false
-  };
-
-  if (original === undefined) {
-    return defaults;
-  } else {
-    const result = original;
-    Object.keys(original).forEach(key => {
-      result[key] = original[key] === undefined ? defaults[key] : original[key];
-    });
-    return result;
-  }
-};

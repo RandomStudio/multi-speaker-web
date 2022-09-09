@@ -9,13 +9,14 @@ export interface BufferedSample {
   isPlaying: boolean;
 }
 
-export interface PlaybackOptions {
-  loop?: boolean;
-  rate?: number;
-  volumeVariation?: number;
-  volume?: number;
-  exclusive?: boolean;
-  fadeInDuration?: number;
+export interface PlaybackConfig {
+  loop: boolean;
+  rate: number;
+  volume: number;
+  exclusive: boolean;
+  fadeInDuration: number;
 }
+
+export type PlaybackOptions = Partial<PlaybackConfig>;
 
 export type SourceMap = Record<string, string>;
