@@ -1,6 +1,5 @@
 import { SourceMap, BufferedSample, PlaybackConfig } from "./types";
 
-
 export const getGainNodes = (
   numOutputChannels: number,
   ctx: AudioContext
@@ -15,7 +14,6 @@ export const getGainNodes = (
   }
   return g;
 };
-
 
 export const createBufferedSamples = (
   sources: SourceMap,
@@ -42,6 +40,7 @@ export const connectBuffer = (sample: BufferedSample, ctx: AudioContext) => {
   sample.outputChannels.forEach((g, index) => {
     sample.bufferSourceNode.connect(g);
     g.connect(sample.mix, 0, index);
+    console.log("connect buffer channel 0 => ", index);
   });
 
   sample.mix.connect(ctx.destination);

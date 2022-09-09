@@ -1,3 +1,6 @@
 export default {
-  root: "./example"
+  root: "./example",
+  server: {
+    port: 8080
+  }
 };

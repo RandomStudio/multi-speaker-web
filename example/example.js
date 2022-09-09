@@ -13,12 +13,33 @@ player.loadSamples({
 console.log({ sampleKeys: player.getSampleKeys() });
 
 const buttonRoot = document.getElementById("buttons");
+
+// Hits
 player.getSampleKeys().forEach(s => {
   const b = document.createElement("button");
-  b.innerText = `Play ${s}`;
+  b.innerText = `Hit ${s}`;
   b.onclick = ev => {
-    console.log("clicked; play", s);
-    player.play(s);
+    player.play(s, 0);
   };
   buttonRoot.appendChild(b);
 });
+
+// // Loops
+// player.getSampleKeys().forEach(s => {
+//   const b = document.createElement("button");
+//   b.innerText = `Loop ${s}`;
+//   b.onclick = ev => {
+//     player.play(s, 0, { loop: true });
+//   };
+//   buttonRoot.appendChild(b);
+// });
+
+// // Stop
+// player.getSampleKeys().forEach(s => {
+//   const b = document.createElement("button");
+//   b.innerText = `Stop ${s} (1000ms fade)`;
+//   b.onclick = ev => {
+//     player.stop(s, 1000);
+//   };
+//   buttonRoot.appendChild(b);
+// });

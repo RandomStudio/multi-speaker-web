@@ -38,6 +38,8 @@ export default class MultiChannelPlayer {
     this.samples = [];
   }
 
+  public getAudioContext = () => this.audioCtx;
+
   public loadSamples = async (sources: SourceMap): Promise<void> => {
     this.samples = createBufferedSamples(
       sources,
@@ -45,7 +47,7 @@ export default class MultiChannelPlayer {
       this.numOutputChannels
     );
 
-    const requests = Object.keys(this.samples).map(
+    const requests = Object.keys(sources).map(
       async key =>
         new Promise<void>((resolve, reject) => {
           const sample = this.getSample(key);
@@ -78,7 +80,7 @@ export default class MultiChannelPlayer {
 
     await Promise.all(requests)
       .then(() => {
-        console.info("all samples loaded: ", Object.keys(this.samples));
+        console.info("all samples loaded: ", JSON.stringify(this.samples));
       })
       .catch(err => {
         console.error("error loading samples:", err);
@@ -90,7 +92,12 @@ export default class MultiChannelPlayer {
     channel: number,
     options?: PlaybackOptions
   ) => {
+    if (channel === undefined) {
+      throw Error("You must specify an output channel index");
+    }
     const sample = this.getSample(keySearch);
+
+    console.log(`multi-speaker-web: play "${keySearch}"...`);
 
     const finalOptions: PlaybackConfig = {
       ...defaults,
@@ -127,6 +134,7 @@ export default class MultiChannelPlayer {
       sample.bufferSourceNode.start(0);
       sample.isPlaying = true;
       sample.bufferSourceNode.onended = () => {
+        console.log(`multi-speaker-web: onended "${keySearch}"...`);
         sample.isPlaying = false;
       };
     }
@@ -166,7 +174,7 @@ export default class MultiChannelPlayer {
   };
 
   private getSample = (key: string): BufferedSample => {
-    const sample = this.samples.find(s => s.id);
+    const sample = this.samples.find(s => s.id === key);
     if (sample) {
       return sample;
     } else {
