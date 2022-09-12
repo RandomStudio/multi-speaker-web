@@ -20,13 +20,13 @@ const samples: SampleMap = {
   // ambience: player.createSample("/ambience.mp3")
 };
 
-player.createSample("/jump.mp3").then(s => {
+player.loadSample("/jump.mp3").then(s => {
   samples.jump = s;
 });
-player.createSample("/land.mp3").then(s => {
+player.loadSample("/land.mp3").then(s => {
   samples.land = s;
 });
-player.createSample("/ambience.mp3").then(s => {
+player.loadSample("/ambience.mp3").then(s => {
   samples.ambience = s;
 });
 

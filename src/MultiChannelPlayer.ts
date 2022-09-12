@@ -39,7 +39,7 @@ class MultiChannelPlayer {
 
   public getNumOutputChannels = () => this.numOutputChannels;
 
-  public createSample = async (src: string): Promise<BufferedSample> => {
+  public loadSample = async (src: string): Promise<BufferedSample> => {
     const sample = await BufferedSample.load(src, this);
     return sample;
   };
