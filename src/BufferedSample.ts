@@ -3,7 +3,8 @@ import MultiChannelPlayer from "./MultiChannelPlayer";
 import { PlaybackConfig, PlaybackOptions } from "./types";
 import { defaults, NONZERO_SILENCE } from "./config";
 class BufferedSample {
-  private bufferSourceNode: AudioBufferSourceNode;
+  private bufferData: AudioBuffer;
+  private bufferSourceNode: AudioBufferSourceNode | null;
   private outputChannels: GainNode[];
   mix: ChannelMergerNode;
   lastStarted: number | null;
@@ -17,14 +18,14 @@ class BufferedSample {
     const ctx = multiChannelAudioContext.getContext();
     const numOutputChannels = multiChannelAudioContext.getNumOutputChannels();
 
-    this.bufferSourceNode = ctx.createBufferSource();
-    this.bufferSourceNode.buffer = bufferData;
+    this.bufferData = bufferData;
+    this.bufferSourceNode = null;
+
     this.duration = bufferData.duration;
     this.outputChannels = createGainNodes(numOutputChannels, ctx);
     this.mix = ctx.createChannelMerger(numOutputChannels);
 
-    this.connectBufferToMix(ctx);
-
+    this.lastStarted = null;
     this.multiChannelAudioContext = multiChannelAudioContext;
   }
 
@@ -42,6 +43,8 @@ class BufferedSample {
   };
 
   public playOnChannel = (targetChannel: number, options?: PlaybackOptions) => {
+    this.createSourceNode();
+
     const config: PlaybackConfig = {
       ...defaults,
       ...options
@@ -54,21 +57,28 @@ class BufferedSample {
       config.fadeInDuration
     );
 
-    this.bufferSourceNode.playbackRate.value = config.rate;
-    this.bufferSourceNode.loop = config.loop;
+    if (this.bufferSourceNode) {
+      this.bufferSourceNode.playbackRate.value = config.rate;
+      this.bufferSourceNode.loop = config.loop;
 
-    this.bufferSourceNode.start();
-    this.lastStarted = this.multiChannelAudioContext.getContext().currentTime;
+      this.bufferSourceNode.start(0);
+      this.lastStarted = this.multiChannelAudioContext.getContext().currentTime;
 
-    this.bufferSourceNode.onended = () => {
-      this.lastStarted = null;
-    };
+      this.bufferSourceNode.onended = () => {
+        console.log("bufferSource ended");
+        this.lastStarted = null;
+        this.bufferSourceNode = null;
+      };
+    } else {
+      throw Error("playOnChannel: AudioBufferSourceNode does not exist (yet?)");
+    }
   };
 
   public stop = (options?: PlaybackOptions) => {
-    const fadeOutDuration = options.fadeOutDuration || defaults.fadeOutDuration;
+    const fadeOutDuration =
+      options?.fadeOutDuration || defaults.fadeOutDuration;
     if (fadeOutDuration === 0) {
-      this.bufferSourceNode.stop();
+      this.bufferSourceNode?.stop();
     } else {
       console.log("Fade out over", fadeOutDuration, "ms ...");
       // Fade out. We don't have to be picky about output channels here,
@@ -84,7 +94,7 @@ class BufferedSample {
         }
       });
       // Stop playback shortly after fade complete
-      this.bufferSourceNode.stop(currentTime + fadeOutDuration / 1000 + 0.01);
+      this.bufferSourceNode?.stop(currentTime + fadeOutDuration / 1000 + 0.01);
     }
   };
 
@@ -93,7 +103,7 @@ class BufferedSample {
   };
 
   public getProgressSeconds = () => {
-    if (this.getIsPlaying()) {
+    if (this.lastStarted) {
       const now = this.multiChannelAudioContext.getContext().currentTime;
       return now - this.lastStarted;
     } else {
@@ -107,13 +117,28 @@ class BufferedSample {
   public getDuration = () => this.duration;
 
   /**
+   * Since AudioBufferSourceNode can only be played once (https://developer.mozilla.org/en-US/docs/Web/API/AudioBufferSourceNode),
+   * it is necessary to recreate the object from the buffer data each time. This is an inexpensive operation.
+   */
+  private createSourceNode = () => {
+    const bufferSourceNode = this.multiChannelAudioContext
+      .getContext()
+      .createBufferSource();
+    bufferSourceNode.buffer = this.bufferData;
+
+    this.connectBufferToMix(bufferSourceNode);
+
+    this.bufferSourceNode = bufferSourceNode;
+  };
+
+  /**
    * Fan out the source (BufferAudioBufferSourceNodeSourceNode) into a separate
    * GainNode for each channel, then merge back using a ChannelMergerNode, which finally
    * is sent to the destination for the AudioContext
    *
    * @param ctx An audio context with a destination that is already configured for the correct number of output channels
    */
-  private connectBufferToMix(ctx: AudioContext) {
+  private connectBufferToMix(bufferSourceNode: AudioBufferSourceNode) {
     /*
       The graph looks something like this (example with 3 output channels):
 
@@ -123,12 +148,12 @@ class BufferedSample {
     */
 
     this.outputChannels.forEach((gainNode, index) => {
-      this.bufferSourceNode.connect(gainNode);
+      bufferSourceNode.connect(gainNode);
       gainNode.connect(this.mix, 0, index);
       console.log("connect buffer channel 0 => ", index);
     });
 
-    this.mix.connect(ctx.destination);
+    this.mix.connect(this.multiChannelAudioContext.getContext().destination);
   }
 }
 

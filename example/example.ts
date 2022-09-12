@@ -38,9 +38,9 @@ for (let channel = 0; channel < NUM_CHANNELS; channel++) {
     b.innerText = `CH# ${channel}: Hit ${key}`;
     b.onclick = _ev => {
       console.log("play on channel", channel);
-      samples[key].playOnChannel(channel);
+      samples[key]?.playOnChannel(channel);
     };
-    hitRoot.appendChild(b);
+    hitRoot?.appendChild(b);
   });
 
   // Loops (now)
@@ -50,9 +50,9 @@ for (let channel = 0; channel < NUM_CHANNELS; channel++) {
     b.innerText = `CH# ${channel}: Loop ${key} (now)`;
     b.onclick = _ev => {
       // player.play(key, channel, { loop: true });
-      samples[key].playOnChannel(channel, { loop: true });
+      samples[key]?.playOnChannel(channel, { loop: true });
     };
-    loopsNowRoot.appendChild(b);
+    loopsNowRoot?.appendChild(b);
   });
 
   // Loops (fade in)
@@ -62,9 +62,12 @@ for (let channel = 0; channel < NUM_CHANNELS; channel++) {
     b.innerText = `CH# ${channel}: Loop ${key} (fade)`;
     b.onclick = _ev => {
       // player.play(s, channel, { loop: true, fadeInDuration: 3000 });
-      samples[key].playOnChannel(channel, { loop: true, fadeInDuration: 3000 });
+      samples[key]?.playOnChannel(channel, {
+        loop: true,
+        fadeInDuration: 3000
+      });
     };
-    loopsFadeRoot.appendChild(b);
+    loopsFadeRoot?.appendChild(b);
   });
 }
 
@@ -75,9 +78,9 @@ Object.keys(samples).forEach(key => {
   b.innerText = `Stop ${key} (now)`;
   b.onclick = _ev => {
     // player.stop(key);
-    samples[key].stop();
+    samples[key]?.stop();
   };
-  stopNowRoot.appendChild(b);
+  stopNowRoot?.appendChild(b);
 });
 
 // Stop (fade out)
@@ -87,9 +90,9 @@ Object.keys(samples).forEach(key => {
   b.innerText = `Stop ${key} (fade)`;
   b.onclick = _ev => {
     // player.stop(key, 2000);
-    samples[key].stop({ fadeOutDuration: 2000 });
+    samples[key]?.stop({ fadeOutDuration: 2000 });
   };
-  stopFadeRoot.appendChild(b);
+  stopFadeRoot?.appendChild(b);
 });
 
 // Clip states
@@ -98,11 +101,13 @@ Object.keys(samples).forEach(key => {
   const info = document.createElement("div");
   setInterval(() => {
     const sample = samples[key];
-    const playing = sample.getIsPlaying();
-    const progress = sample.getProgressNormalised();
-    info.innerText = `${key}: ${
-      playing ? "PLAYING" : "STOPPED"
-    } :: ${progress}`;
+    if (sample) {
+      const playing = sample.getIsPlaying();
+      const progress = sample.getProgressNormalised();
+      info.innerText = `${key}: ${
+        playing ? "PLAYING" : "STOPPED"
+      } :: ${progress}`;
+    }
   }, 100);
-  stateRoot.appendChild(info);
+  stateRoot?.appendChild(info);
 });
