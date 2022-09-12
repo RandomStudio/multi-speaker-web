@@ -1,9 +1,9 @@
 import { createGainNodes, playWithExclusiveOutputChannel } from "./functions";
-import MultiChannelPlayer from "./MultiChannelPlayer";
+import { MultiChannelPlayer } from "./MultiChannelPlayer";
 import { ChannelPanningConfig, PlaybackConfig, PlaybackOptions } from "./types";
 import { defaults, NONZERO_SILENCE } from "./config";
 
-class BufferedSample {
+export class BufferedSample {
   private bufferData: AudioBuffer;
   private bufferSourceNode: AudioBufferSourceNode | null;
   private outputChannels: GainNode[];
@@ -197,6 +197,9 @@ class BufferedSample {
     }
   };
 
+  public getIsLooping = () =>
+    this.bufferSourceNode ? this.bufferSourceNode.loop : false;
+
   public getProgressNormalised = () =>
     this.getProgressSeconds() / this.duration;
 
@@ -251,5 +254,3 @@ class BufferedSample {
     this.mix.connect(this.multiChannelAudioContext.getContext().destination);
   }
 }
-
-export default BufferedSample;

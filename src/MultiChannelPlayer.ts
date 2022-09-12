@@ -1,6 +1,6 @@
-import BufferedSample from "./BufferedSample";
+import { BufferedSample } from "./BufferedSample";
 
-class MultiChannelPlayer {
+export class MultiChannelPlayer {
   private ctx: AudioContext;
   private numOutputChannels: number;
 
@@ -44,5 +44,3 @@ class MultiChannelPlayer {
     return sample;
   };
 }
-
-export default MultiChannelPlayer;

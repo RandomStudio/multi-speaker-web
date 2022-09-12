@@ -1,4 +1,4 @@
-import BufferedSample from "./BufferedSample";
+import { BufferedSample } from "./BufferedSample";
 import { NONZERO_SILENCE } from "./config";
 
 export const createGainNodes = (
