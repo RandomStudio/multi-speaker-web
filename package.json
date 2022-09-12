@@ -2,10 +2,11 @@
   "name": "@randomstudio/multi-channel-web-audio",
   "version": "1.0.0",
   "description": "Multi channel, multi speaker audio for the browser",
-  "main": "dist/index.js",
+  "main": "dist/BufferedSample.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "npx tsc",
+    "prepare": "npm run build",
     "example": "npx vite"
   },
   "repository": {
