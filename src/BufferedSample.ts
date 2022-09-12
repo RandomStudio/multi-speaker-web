@@ -130,25 +130,27 @@ class BufferedSample {
       ...options
     };
 
-    console.log("playCustomPlanning with options", JSON.stringify(config));
+    const channelsWithVolumes = this.outputChannels.map((gainNode, index) => {
+      const customPanning = channelPanning.find(p => p.index === index);
+      const volume = customPanning ? customPanning.volume || 1.0 : 0;
+      return {
+        index,
+        gainNode,
+        volume
+      };
+    });
 
-    channelPanning.forEach(channelPanning => {
-      const { index, volume } = channelPanning;
-      const gainNode = this.outputChannels[index];
-      if (gainNode) {
-        console.log(
-          "Set gainNode #",
-          channelPanning.index,
-          "to volume",
-          channelPanning.volume
-        );
-        gainNode.gain.setValueAtTime(
-          volume || 1.0,
-          this.multiChannelAudioContext.getContext().currentTime
-        );
+    channelsWithVolumes.forEach(channel => {
+      const { index, gainNode, volume } = channel;
+      if (volume > 0) {
+        console.log("Setting outputChannel #", index, "to volume", volume);
       } else {
-        throw Error(`No matching gainNode for channelPanning index ${index}`);
+        console.log("Muting outputChannel #", index);
       }
+      gainNode.gain.setValueAtTime(
+        volume,
+        this.multiChannelAudioContext.getContext().currentTime
+      );
     });
 
     this.play(config);

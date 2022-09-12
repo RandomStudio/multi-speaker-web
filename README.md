@@ -25,13 +25,29 @@ Load a sample so it's ready for playback and control (async):
 const mySample = await player.loadSample("/someSampleURL.mp3");
 ```
 
-### Play samples on specific channel
+## Playback
+
+### Play sample on a SINGLE specific channel
 
 Call `.playOnChannel()` for any sample already loaded, e.g:
 
 ```
 mysample.playOnChannel(2); // plays out of speaker index 2 (third speaker) ONLY
 ```
+
+All other output channels for the sample will be muted.
+
+### Play at the same volume on multiple channels
+
+Call `.playSameOnChannels` and specify either a list of channel indexes or no channels.
+
+All channels matching the list (or all channels) will be played at the specified volume (or full volume); all other output channels for the sample will be muted.
+
+### Play channels with custom volume ("panning") for each channl
+
+Call `.playCustomPanning` and provide a list of { index, volume } objects to specify the channels and their respective volumes you want them to have.
+
+All channels matching the list (or all channels) will be played at the specified volume (or full volume); all other output channels for the sample will be muted.
 
 ### Optional playback configuration
 
@@ -43,7 +59,7 @@ You can pass a third parameter to any of the `play` functions if you like: a `Pl
 - `fadeInDuration`: number (default `0`) - how long (in ms) to fade in; only applies for play/start operations
 - `fadeOutDuration`: number (default `0`) - how long (in ms) to fade out; only applies for stop operations
 
-## Example
+## Browser-based Demo
 
 You can run a small browser demo to test again, with `npm run example`
 

@@ -96,6 +96,17 @@ Object.keys(samples).forEach(key => {
   hitPanning?.appendChild(b);
 });
 
+// Hits with custom panning
+const hitCustom2 = document.getElementById("hits-custom");
+Object.keys(samples).forEach(key => {
+  const b = document.createElement("button");
+  b.innerText = `CUSTOM-PANNED2:: Hit ${key}`;
+  b.onclick = _ev => {
+    samples[key]?.playCustomPanning([{ index: 1, volume: 0.8 }]);
+  };
+  hitCustom2?.appendChild(b);
+});
+
 // Stop (now)
 const stopNowRoot = document.getElementById("stop-now");
 Object.keys(samples).forEach(key => {
