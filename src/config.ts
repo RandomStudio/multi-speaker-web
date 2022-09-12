@@ -5,7 +5,8 @@ export const defaults: PlaybackConfig = {
   rate: 1,
   volume: 1,
   exclusive: true,
-  fadeInDuration: 0
+  fadeInDuration: 0,
+  fadeOutDuration: 0
 };
 
 // Necessary because WebAudio API will not accept actual 0 as target volume for exponential ramp fade

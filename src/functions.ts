@@ -1,7 +1,7 @@
+import BufferedSample from "./BufferedSample";
 import { NONZERO_SILENCE } from "./config";
-import { SourceMap, BufferedSample, PlaybackConfig } from "./types";
 
-export const getGainNodes = (
+export const createGainNodes = (
   numOutputChannels: number,
   ctx: AudioContext
 ): GainNode[] => {
@@ -16,45 +16,14 @@ export const getGainNodes = (
   return g;
 };
 
-export const createBufferedSamples = (
-  sources: SourceMap,
-  ctx: AudioContext,
-  numOutputChannels: number
-): BufferedSample[] =>
-  Object.keys(sources).reduce<BufferedSample[]>(
-    (result, key) => [
-      ...result,
-      {
-        id: key,
-        src: sources[key],
-        bufferSourceNode: ctx.createBufferSource(),
-        bufferData: null,
-        outputChannels: getGainNodes(numOutputChannels, ctx),
-        mix: ctx.createChannelMerger(numOutputChannels),
-        startedAt: null
-      }
-    ],
-    []
-  );
-
-export const connectBuffer = (sample: BufferedSample, ctx: AudioContext) => {
-  sample.outputChannels.forEach((g, index) => {
-    sample.bufferSourceNode.connect(g);
-    g.connect(sample.mix, 0, index);
-    console.log("connect buffer channel 0 => ", index);
-  });
-
-  sample.mix.connect(ctx.destination);
-};
-
-export const exclusiveOutputChannel = (
+export const playWithExclusiveOutputChannel = (
   ctx: AudioContext,
   outputChannels: GainNode[],
   target: number,
   maxVolume = 1,
   fadeInDuration = 0
 ) => {
-  outputChannels.forEach((s, index) => {
+  outputChannels.forEach((gainNode, index) => {
     if (index === target) {
       if (fadeInDuration > 0) {
         console.log(
@@ -65,20 +34,20 @@ export const exclusiveOutputChannel = (
           "..."
         );
         // Fade in, so first set volume to 0...
-        s.gain.setValueAtTime(NONZERO_SILENCE, ctx.currentTime);
+        gainNode.gain.setValueAtTime(NONZERO_SILENCE, ctx.currentTime);
         // ...then schedule maxVolume at currentTime plus fadeInDuration
-        s.gain.exponentialRampToValueAtTime(
+        gainNode.gain.exponentialRampToValueAtTime(
           1.0,
           ctx.currentTime + fadeInDuration / 1000
         );
       } else {
         // No fade; just set to maxVolume "immediately"
-        s.gain.setValueAtTime(maxVolume, ctx.currentTime);
+        gainNode.gain.setValueAtTime(maxVolume, ctx.currentTime);
       }
     } else {
       // Every other output channel: set to zero volume
       // console.log("set outputChannel", index, "to zero volume");
-      s.gain.setValueAtTime(0, ctx.currentTime);
+      gainNode.gain.setValueAtTime(0, ctx.currentTime);
     }
   });
 };
