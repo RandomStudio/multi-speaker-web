@@ -1,6 +1,8 @@
 # Multi Channel Web Audio
 
-Provides a convenient audio engine that can route sounds to specific speakers in a multi-channel (more than 2 speakers) environment.
+Provides a convenient system for the browser-based Web Audio API, for routing sounds to specific speakers in a multi-channel environment. It works for 2 speakers (stereo) but becomes much more useful for environments with more channels.
+
+The idea is to facilitate mono audio sources in multi-channel setups without having to pre/re mix anything for standard "surround sound" systems.
 
 ## Setup
 
@@ -10,62 +12,36 @@ Install
 npm i multi-channel-web-audio
 ```
 
-Import
+Import the player, specifying the number of channels you intend to output to:
 
 ```
 import MultiChannelPlayer from "multi-channel-web-audio";
+const player = MultiChannelPlayer.setup(4);
 ```
 
-or
+Load a sample so it's ready for playback and control (async):
 
 ```
-const MultiChannelPlayer = require("multi-channel-web-audio");
+const mySample = await player.loadSample("/someSampleURL.mp3");
 ```
 
-## Usage
+### Play samples on specific channel
 
-### Make a player instance
-
-Instantiate with the number of speakers you expect to route. For example, here's a 4 channel setup:
+Call `.playOnChannel()` for any sample already loaded, e.g:
 
 ```
-const player = new MultiChannelPlayer(4);
-```
-
-### Load a sample bank
-
-Call `loadSamples` and provide a sample bank object, where each key is a string naming the sample, and the corresponding value is the path to the source file. This happens asynchronously (fetches files and loads array buffers), so the result is a Promise<void>.
-
-For example:
-
-```
-player.loadSamples({
-  beep: "/samples/beep.mp3",
-  toot: "/samples/toot-toot.mp3"
-}).then(() => {
-  console.log('yay my samples loaded');
-  // now you can play them
-}).catch(e => {
-  console.error('something went wrong loading samples: ', e);
-});
-```
-
-### Trigger samples
-
-Specify the sample key (it must exist in your `SourceMap`, and it must have been loaded already); then specify the channel (speaker) you want it to play from. Example:
-
-```
-player.play("beep", 2); // plays out of speaker index 2 (third speaker)
+mysample.playOnChannel(2); // plays out of speaker index 2 (third speaker) ONLY
 ```
 
 ### Optional playback configuration
 
-You can pass a third parameter to `play` if you like: a `PlaybackOptions` object, specifying any or all of the following:
+You can pass a third parameter to any of the `play` functions if you like: a `PlaybackOptions` object, specifying any or all of the following:
 
 - `loop` boolean (default: `false`) - whether to loop the sample or play just once through
 - `rate`: number (default `1.0`) - playback speed multiplier (affects pitch)
 - `volume`: number (default `1.0`) - target "full" volume, from 0 (silence) to full volume (1.0)
-- `exclusive`: boolean (default `true) - whether to prevent multiple starts of the sample buffer before it finishes
+- `fadeInDuration`: number (default `0`) - how long (in ms) to fade in; only applies for play/start operations
+- `fadeOutDuration`: number (default `0`) - how long (in ms) to fade out; only applies for stop operations
 
 ## Example
 
@@ -81,7 +57,8 @@ The library is written in TypeScript so compiles with `npm run build`
 
 - [x] Remove all random picking, random variations (outside the scope of this library; should be handled by client library/application)
 - [x] Revisit "applyDefaults" mechanism / types
-- [ ] Create a class for Sample (BufferedSample) which keeps track of its own state
+- [x] Create a class for Sample (BufferedSample) which keeps track of its own state
+- [ ] Check that progress/duration is accurate when rate is not 1.0
 - [ ] It should be possible to play sample multiple times simultaneously (currently, "exclusive" mode prevents strange issues)
 - [ ] Should be possible to play sample via multiple channels (same volume)
 - [ ] Should be possible to play sample with custom "panning" between multiple channels (pseudo-spatialised audio)
