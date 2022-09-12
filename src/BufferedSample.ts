@@ -1,7 +1,8 @@
 import { createGainNodes, playWithExclusiveOutputChannel } from "./functions";
 import MultiChannelPlayer from "./MultiChannelPlayer";
-import { PlaybackConfig, PlaybackOptions } from "./types";
+import { ChannelPanningConfig, PlaybackConfig, PlaybackOptions } from "./types";
 import { defaults, NONZERO_SILENCE } from "./config";
+
 class BufferedSample {
   private bufferData: AudioBuffer;
   private bufferSourceNode: AudioBufferSourceNode | null;
@@ -42,9 +43,12 @@ class BufferedSample {
     return sample;
   };
 
+  /**
+   * Play on a SINGLE channel (mute all other channel outputs) for this sample
+   * @param targetChannel
+   * @param options
+   */
   public playOnChannel = (targetChannel: number, options?: PlaybackOptions) => {
-    this.createSourceNode();
-
     const config: PlaybackConfig = {
       ...defaults,
       ...options
@@ -56,6 +60,12 @@ class BufferedSample {
       config.volume,
       config.fadeInDuration
     );
+
+    this.play(config);
+  };
+
+  private play = (config: PlaybackConfig) => {
+    this.createSourceNode();
 
     if (this.bufferSourceNode) {
       this.bufferSourceNode.playbackRate.value = config.rate;
@@ -72,6 +82,44 @@ class BufferedSample {
     } else {
       throw Error("playOnChannel: AudioBufferSourceNode does not exist (yet?)");
     }
+  };
+
+  /**
+   * Play on one or more target channels, either at full volume or specific volumes for each channel.
+   *
+   * @param channels A list of one or more { index, volume? } objects for each of the channels you want
+   * to play the sample on.
+   * @param options
+   */
+  public playOnChannels = (
+    channels: ChannelPanningConfig[],
+    options?: PlaybackOptions
+  ) => {
+    if (channels.length > this.outputChannels.length) {
+      throw Error(
+        "You specified more channel panning options than available channel count"
+      );
+    }
+
+    const config: PlaybackConfig = {
+      ...defaults,
+      ...options
+    };
+
+    channels.forEach(channelPanning => {
+      const { index, volume } = channelPanning;
+      const gainNode = this.outputChannels[index];
+      if (gainNode) {
+        gainNode.gain.setValueAtTime(
+          volume || 1.0,
+          this.multiChannelAudioContext.getContext().currentTime
+        );
+      } else {
+        throw Error(`No matching gainNode for channelPanning index ${index}`);
+      }
+    });
+
+    this.play(config);
   };
 
   public stop = (options?: PlaybackOptions) => {

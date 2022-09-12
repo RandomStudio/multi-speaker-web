@@ -71,6 +71,17 @@ for (let channel = 0; channel < NUM_CHANNELS; channel++) {
   });
 }
 
+// Hits both channels
+const hitBoth = document.getElementById("hits-both");
+Object.keys(samples).forEach(key => {
+  const b = document.createElement("button");
+  b.innerText = `BOTH-#:: Hit ${key}`;
+  b.onclick = _ev => {
+    samples[key]?.playOnChannels([{ index: 0 }, { index: 1 }]);
+  };
+  hitBoth?.appendChild(b);
+});
+
 // Stop (now)
 const stopNowRoot = document.getElementById("stop-now");
 Object.keys(samples).forEach(key => {

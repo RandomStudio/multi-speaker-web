@@ -7,6 +7,11 @@ export interface PlaybackConfig {
   fadeOutDuration: number;
 }
 
+export interface ChannelPanningConfig {
+  index: number;
+  volume?: number;
+}
+
 export type PlaybackOptions = Partial<PlaybackConfig>;
 
 export type SourceMap = Record<string, string>;
