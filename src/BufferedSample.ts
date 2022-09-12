@@ -101,7 +101,7 @@ export class BufferedSample {
     const channelPanning: ChannelPanningConfig[] = channelIndexes.map(
       index => ({
         index,
-        volume: options?.volume || 1.0
+        volume: 1.0
       })
     );
 
@@ -132,12 +132,24 @@ export class BufferedSample {
 
     const channelsWithVolumes = this.outputChannels.map((gainNode, index) => {
       const customPanning = channelPanning.find(p => p.index === index);
-      const volume = customPanning ? customPanning.volume || 1.0 : 0;
-      return {
-        index,
-        gainNode,
-        volume
-      };
+
+      if (customPanning) {
+        const scaleVolume = options?.volume ? options.volume : 1.0;
+        const panVolume = customPanning.volume || 1.0;
+        const finalVolume = scaleVolume * panVolume;
+
+        return {
+          index,
+          gainNode,
+          volume: finalVolume
+        };
+      } else {
+        return {
+          index,
+          gainNode,
+          volume: 0 // "mute"
+        };
+      }
     });
 
     channelsWithVolumes.forEach(channel => {
