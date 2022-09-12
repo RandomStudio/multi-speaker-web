@@ -106,7 +106,7 @@ Object.keys(samples).forEach(key => {
       const progress = sample.getProgressNormalised();
       info.innerText = `${key}: ${
         playing ? "PLAYING" : "STOPPED"
-      } :: ${progress}`;
+      } :: ${progress} ; volume = ${sample.getVolume().toFixed(2)}`;
     }
   }, 100);
   stateRoot?.appendChild(info);

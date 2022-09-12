@@ -116,6 +116,15 @@ class BufferedSample {
 
   public getDuration = () => this.duration;
 
+  public getVolume = () => {
+    const getLoudestChannelValue = this.outputChannels.reduce(
+      (result, gainNode) =>
+        gainNode.gain.value > result ? gainNode.gain.value : result,
+      0
+    );
+    return this.getIsPlaying() ? getLoudestChannelValue : 0;
+  };
+
   /**
    * Since AudioBufferSourceNode can only be played once (https://developer.mozilla.org/en-US/docs/Web/API/AudioBufferSourceNode),
    * it is necessary to recreate the object from the buffer data each time. This is an inexpensive operation.
@@ -136,7 +145,7 @@ class BufferedSample {
    * GainNode for each channel, then merge back using a ChannelMergerNode, which finally
    * is sent to the destination for the AudioContext
    *
-   * @param ctx An audio context with a destination that is already configured for the correct number of output channels
+   * @param bufferSourceNodetx An AudioBufferSourceNode, created already and ready to play
    */
   private connectBufferToMix(bufferSourceNode: AudioBufferSourceNode) {
     /*
