@@ -102,10 +102,14 @@ class BufferedSample {
     return this.lastStarted !== null;
   };
 
-  public getProgressSeconds = () => {
+  public getProgressSeconds = (wrapLoop = true) => {
     if (this.lastStarted) {
       const now = this.multiChannelAudioContext.getContext().currentTime;
-      return now - this.lastStarted;
+      if (wrapLoop && this.bufferSourceNode?.loop === true) {
+        return (now - this.lastStarted) % this.duration;
+      } else {
+        return now - this.lastStarted;
+      }
     } else {
       return 0;
     }
