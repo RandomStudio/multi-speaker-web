@@ -85,17 +85,41 @@ class BufferedSample {
   };
 
   /**
-   * Play on one or more target channels, either at full volume or specific volumes for each channel.
+   * Play at the same volume on either all channels or a list of channels
+   * @param channels An array channel indexes. Leave this out to simply play on *all* available output channels.
+   * @param options Playback options. If a volume is specified here, it will be applied to all selected output channels,
+   * otherwise, full volume (value 1.0) will be used instead
+   */
+
+  public playSameOnChannels = (
+    channels?: number[],
+    options?: PlaybackOptions
+  ) => {
+    const channelIndexes = channels
+      ? channels
+      : this.outputChannels.map((_c, index) => index);
+    const channelPanning: ChannelPanningConfig[] = channelIndexes.map(
+      index => ({
+        index,
+        volume: options?.volume || 1.0
+      })
+    );
+
+    this.playCustomPanning(channelPanning, options);
+  };
+
+  /**
+   * Play on one or more target channels, with the ability to specify different volumes ("panning") for each channel individually
    *
-   * @param channels A list of one or more { index, volume? } objects for each of the channels you want
+   * @param channelPanning A list of one or more { index, volume? } objects for each of the channels you want
    * to play the sample on.
    * @param options
    */
-  public playOnChannels = (
-    channels: ChannelPanningConfig[],
+  public playCustomPanning = (
+    channelPanning: ChannelPanningConfig[],
     options?: PlaybackOptions
   ) => {
-    if (channels.length > this.outputChannels.length) {
+    if (channelPanning.length > this.outputChannels.length) {
       throw Error(
         "You specified more channel panning options than available channel count"
       );
@@ -106,10 +130,18 @@ class BufferedSample {
       ...options
     };
 
-    channels.forEach(channelPanning => {
+    console.log("playCustomPlanning with options", JSON.stringify(config));
+
+    channelPanning.forEach(channelPanning => {
       const { index, volume } = channelPanning;
       const gainNode = this.outputChannels[index];
       if (gainNode) {
+        console.log(
+          "Set gainNode #",
+          channelPanning.index,
+          "to volume",
+          channelPanning.volume
+        );
         gainNode.gain.setValueAtTime(
           volume || 1.0,
           this.multiChannelAudioContext.getContext().currentTime

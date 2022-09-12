@@ -77,9 +77,23 @@ Object.keys(samples).forEach(key => {
   const b = document.createElement("button");
   b.innerText = `BOTH-#:: Hit ${key}`;
   b.onclick = _ev => {
-    samples[key]?.playOnChannels([{ index: 0 }, { index: 1 }]);
+    samples[key]?.playSameOnChannels();
   };
   hitBoth?.appendChild(b);
+});
+
+// Hits with custom panning
+const hitPanning = document.getElementById("hits-custom");
+Object.keys(samples).forEach(key => {
+  const b = document.createElement("button");
+  b.innerText = `CUSTOM-PANNED:: Hit ${key}`;
+  b.onclick = _ev => {
+    samples[key]?.playCustomPanning([
+      { index: 0, volume: 0.5 },
+      { index: 1, volume: 0.75 }
+    ]);
+  };
+  hitPanning?.appendChild(b);
 });
 
 // Stop (now)
